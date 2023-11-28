@@ -1,6 +1,6 @@
-import { promises } from "fs";
-import { join } from "node:path";
-import { SafeReturn } from "@/typings.ts";
+import { SafeReturn } from '@/typings.ts';
+import { promises } from 'fs';
+import { join } from 'node:path';
 
 export async function readDirectoryFiles(directoryPath: string): Promise<SafeReturn<string[]>> {
   try {

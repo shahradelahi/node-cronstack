@@ -1,33 +1,45 @@
-import { Command } from 'commander';
 import logger from '@/logger.ts';
-import { z } from 'zod';
-import { handleError } from '@/utils/handle-error.ts';
-import { CronJob } from 'cron';
 import { Service } from '@/typings.ts';
-import path from 'node:path';
+import { handleError } from '@/utils/handle-error.ts';
 import { readDirectoryFiles } from '@/utils/read-directory-files.ts';
-
-const makeProfileOptionsSchema = z.object({
-  name: z.string(),
-  endpointUrl: z.string(),
-  token: z.string(),
-  force: z.boolean()
-});
+import { Command } from 'commander';
+import { CronJob } from 'cron';
+import path from 'node:path';
+import ora from 'ora';
+import { z } from 'zod';
 
 export const start = new Command()
   .command('start')
-  .description('Create a new vault profile')
-  .action(async (opts) => {
+  .description('Start all services')
+  .argument('[services...]', 'service names to start', [])
+  .option(
+    '-c, --cwd <cwd>',
+    'the working directory. defaults to the current directory.',
+    process.cwd()
+  )
+  .action(async (services, opts) => {
     logger.log('');
 
     try {
-      const options = makeProfileOptionsSchema.parse({});
+      const options = z
+        .object({
+          cwd: z.string().default(process.cwd()),
+          services: z.array(z.string()).default([])
+        })
+        .parse({
+          ...opts,
+          services
+        });
 
       const jobs: Map<string, CronJob> = new Map();
-      const handlers: Service[] = await getHandlers();
+      let handlers: Service[] = await getHandlers(options.cwd);
 
-      for (const handlersKey in handlers) {
-        const handler: Service = handlers[handlersKey];
+      if (options.services.length > 0) {
+        handlers = handlers.filter((handler) => options.services.includes(handler.name));
+      }
+
+      for (const handlerKey in handlers) {
+        const handler: Service = handlers[handlerKey];
 
         if (jobs.has(handler.name)) {
           logger.warn(
@@ -70,28 +82,33 @@ export const start = new Command()
         job.start();
       }
 
-      logger.success('All jobs started.');
+      process.on('SIGINT', onSigint(jobs));
 
-      process.on('SIGINT', () => {
-        logger.info('Stopping all jobs.');
-        for (const job of jobs.values()) {
-          job.stop();
-        }
-        logger.success('All jobs stopped.');
-        process.exit(0);
-      });
+      logger.success('All jobs started.');
     } catch (e) {
       handleError(e);
     }
   });
+
+const onSigint = (jobs: Map<string, CronJob>) => {
+  return () => {
+    const stopProgress = ora('Stopping all jobs.').start();
+    for (const job of jobs.values()) {
+      job.stop();
+    }
+    stopProgress.succeed('All jobs stopped.');
+    process.exit(0);
+  };
+};
 
 async function getModule(_path: string): Promise<any> {
   const absolutePath = path.isAbsolute(_path) ? _path : path.resolve(process.cwd(), _path);
   return await import(absolutePath);
 }
 
-async function getHandlers(): Promise<Service[]> {
-  const handlersPath = path.join(process.cwd(), 'services');
+async function getHandlers(cwd: string): Promise<Service[]> {
+  const handlersPath = path.join(cwd, 'services');
+
   const { data: files, error } = await readDirectoryFiles(handlersPath);
   if (!files || error) {
     throw new Error('Failed to read handlers directory');
@@ -101,9 +118,9 @@ async function getHandlers(): Promise<Service[]> {
   for (const file of files) {
     const module = await getModule(file);
     if (!module.default) {
-      logger.warn(`Handler ${file} does not have a default export`);
-      continue;
+      throw new Error(`Handler ${file} does not have a default export`);
     }
+
     const handler = new module.default() as Service;
     handlers.push(handler);
   }

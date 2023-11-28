@@ -1,14 +1,25 @@
 {
-  "name": "microservice",
-  "version": "0.1.0-alpha.0",
-  "bin": "./dist/cli.js",
-  "exports": {
-    ".": "./dist/lib.js",
-    "./logger": "./dist/logger.js"
-  },
+  "name": "@litehex/microservice",
+  "version": "0.1.0-alpha.7",
+  "main": "dist/lib.cjs",
+  "module": "dist/lib.js",
+  "types": "dist/lib.d.cts",
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/lib.d.ts",
+        "default": "./dist/lib.js"
+      },
+      "require": {
+        "types": "./dist/lib.d.cts",
+        "default": "./dist/lib.cjs"
+      }
+    }
+  },
+  "bin": "./dist/index.js",
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
@@ -43,7 +54,7 @@
   "author": "Shahrad Elahi <shahrad@litehex.com> (https://github.com/shahradelahi)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shahradelahi/vault-cli.git"
+    "url": "https://github.com/shahradelahi/microservice.git"
   },
   "license": "GPL-3.0",
   "publishConfig": {

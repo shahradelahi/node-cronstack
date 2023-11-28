@@ -1,22 +1,25 @@
-import { Command } from 'commander';
 import logger from '@/logger.ts';
-import { z } from 'zod';
-import path from 'node:path';
-import { promises } from 'node:fs';
 import { fsAccess } from '@/utils/fs-access.ts';
-import { namedMicroservice } from '@/utils/templates.ts';
-import cronstrue from 'cronstrue';
 import { handleError } from '@/utils/handle-error.ts';
+import { namedMicroservice } from '@/utils/templates.ts';
+import { Command } from 'commander';
+import cronstrue from 'cronstrue';
+import { promises } from 'node:fs';
+import path from 'node:path';
+import { z } from 'zod';
 
 export const add = new Command()
-  .argument('add <name>', 'name of the service')
+  .command('add <name>')
+  .description('Add a new service')
   .option('-i, --interval <interval>', 'interval of the service', '* * * * *')
   .option(
     '-c, --cwd <cwd>',
     'the working directory. defaults to the current directory.',
     process.cwd()
   )
-  .action(async (name: string, opts) => {
+  .action(async (name, opts) => {
+    logger.log('');
+
     try {
       const options = z
         .object({

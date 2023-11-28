@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
 import { fsAccess } from '@/utils/fs-access.ts';
-import dotenv from 'dotenv';
-import { init, start } from './commands';
-import { add } from '@/commands/add.ts';
 import { getPackageInfo } from '@/utils/get-package-info.ts';
+import { Command } from 'commander';
+import dotenv from 'dotenv';
+import { add, init, start } from './commands';
 
 process.on('SIGINT', () => process.exit(0));
 process.on('SIGTERM', () => process.exit(0));
