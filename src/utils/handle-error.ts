@@ -9,6 +9,7 @@ export function handleError(error: unknown) {
 
   if (error instanceof Error) {
     logger.error(error.message);
+    logger.log(error.stack);
     process.exit(1);
   }
 

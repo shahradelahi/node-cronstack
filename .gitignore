@@ -133,3 +133,7 @@ dist
 .idea
 
 /.npmrc
+
+# Microservice
+.microservice
+.ignoreme

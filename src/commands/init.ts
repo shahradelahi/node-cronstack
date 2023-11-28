@@ -3,6 +3,7 @@ import { fsAccess } from '@/utils/fs-access.ts';
 import { getPackageManager } from '@/utils/get-package-manager.ts';
 import { handleError } from '@/utils/handle-error.ts';
 import { namedMicroservice } from '@/utils/templates.ts';
+import chalk from 'chalk';
 import { Command } from 'commander';
 import { execa } from 'execa';
 import { promises } from 'node:fs';
@@ -14,6 +15,11 @@ export const init = new Command()
   .command('init')
   .description('Initialize a new microservice')
   .option(
+    '--nodep',
+    'skip installing dependencies. useful if you want to install dependencies yourself.',
+    false
+  )
+  .option(
     '-c, --cwd <cwd>',
     'the working directory. defaults to the current directory.',
     process.cwd()
@@ -24,11 +30,11 @@ export const init = new Command()
     try {
       const options = z
         .object({
+          nodep: z.boolean().default(false),
           cwd: z.string().default(process.cwd())
         })
         .parse(opts);
 
-      // create "services" directory and add "services/hello.ts" sample service
       const cwd = path.resolve(options.cwd);
       const servicesPath = path.join(cwd, 'services');
 
@@ -36,23 +42,57 @@ export const init = new Command()
         await promises.mkdir(servicesPath);
       }
 
-      if (await fsAccess('services/hello.ts')) {
-        await promises.writeFile('services/hello.ts', namedMicroservice('hello'));
+      const helloPath = path.join(servicesPath, 'hello.ts');
+      if (!(await fsAccess(helloPath))) {
+        await promises.writeFile(helloPath, namedMicroservice('hello'));
       }
 
+      await updateGitignore();
+
       // install dependencies
-      const dependenciesSpinner = ora(`Installing dependencies...`)?.start();
-      const packageManager = await getPackageManager(cwd);
-      const deps = ['cron', 'dotenv'];
+      if (options.nodep) {
+        logger.log('');
+        logger.info(chalk.yellow('Warning!'), 'Dependencies not installed.');
+        logger.log('');
+      } else {
+        const dependenciesSpinner = ora(`Installing dependencies...`)?.start();
 
-      await execa(packageManager, [packageManager === 'npm' ? 'install' : 'add', ...deps], {
-        cwd: options.cwd
-      });
+        const packageManager = await getPackageManager(cwd);
+        const deps = ['cron', 'dotenv', 'tsx'];
 
-      dependenciesSpinner?.succeed();
+        await execa(packageManager, [packageManager === 'npm' ? 'install' : 'add', ...deps], {
+          cwd: options.cwd
+        });
 
-      logger.success('Microservice initialized successfully.');
+        dependenciesSpinner?.succeed('Done!');
+        logger.log('');
+      }
+
+      logger.info(chalk.green('Success!'), 'Microservice initialized successfully.');
+      logger.log('');
     } catch (e) {
       handleError(e);
     }
   });
+
+async function updateGitignore() {
+  if (await fsAccess('.gitignore')) {
+    const gitignore = (await promises.readFile('.gitignore')).toString();
+    const hasMicroservice = gitignore.includes('.microservice');
+    const hasEnv = gitignore.includes('.env');
+    if (!hasMicroservice) {
+      await promises.appendFile(
+        '.gitignore',
+        [
+          '',
+          '# Microservice',
+          hasMicroservice ? false : '.microservice',
+          hasEnv ? false : '.env',
+          ''
+        ]
+          .filter(Boolean)
+          .join('\n')
+      );
+    }
+  }
+}

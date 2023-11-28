@@ -1,10 +1,9 @@
 import cronstrue from 'cronstrue';
 
-export const MICROSERVICE = `import { CronTime } from "cron";
-import logger from "microservice/logger";
-import type { IService } from "microservice";
+export const MICROSERVICE = `import { BaseService, logger } from '@litehex/microservice';
+import { CronTime } from 'cron';
 
-export default class Handler implements IService {
+export default class Handler extends BaseService {
   name: string = "%NAME%";
   interval: CronTime = new CronTime("%INTERVAL%"); // %HUMAN_INTERVAL%
 

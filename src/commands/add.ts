@@ -2,6 +2,7 @@ import logger from '@/logger.ts';
 import { fsAccess } from '@/utils/fs-access.ts';
 import { handleError } from '@/utils/handle-error.ts';
 import { namedMicroservice } from '@/utils/templates.ts';
+import chalk from 'chalk';
 import { Command } from 'commander';
 import cronstrue from 'cronstrue';
 import { promises } from 'node:fs';
@@ -42,8 +43,9 @@ export const add = new Command()
         await promises.writeFile(servicePath, namedMicroservice(name, options.interval));
       }
 
-      logger.success(`Service "${servicePath}" added successfully.`);
+      logger.info(chalk.green('Success!'), `Service "${servicePath}" added successfully.`);
       logger.log(`${name} ${options.interval} (${cronstrue.toString(options.interval)})`);
+      logger.log('');
     } catch (e) {
       handleError(e);
     }

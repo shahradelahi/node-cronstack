@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
 import { fsAccess } from '@/utils/fs-access.ts';
 import { getPackageInfo } from '@/utils/get-package-info.ts';

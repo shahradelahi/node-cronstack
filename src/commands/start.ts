@@ -2,6 +2,7 @@ import logger from '@/logger.ts';
 import { Service } from '@/typings.ts';
 import { handleError } from '@/utils/handle-error.ts';
 import { readDirectoryFiles } from '@/utils/read-directory-files.ts';
+import chalk from 'chalk';
 import { Command } from 'commander';
 import { CronJob } from 'cron';
 import path from 'node:path';
@@ -12,6 +13,7 @@ export const start = new Command()
   .command('start')
   .description('Start all services')
   .argument('[services...]', 'service names to start', [])
+  .option('--time-zone <timeZone>', 'the time zone to use. defaults to "UTC".', 'UTC')
   .option(
     '-c, --cwd <cwd>',
     'the working directory. defaults to the current directory.',
@@ -23,6 +25,7 @@ export const start = new Command()
     try {
       const options = z
         .object({
+          timeZone: z.string().default('UTC'),
           cwd: z.string().default(process.cwd()),
           services: z.array(z.string()).default([])
         })
@@ -30,6 +33,8 @@ export const start = new Command()
           ...opts,
           services
         });
+
+      const startTime = new Date().getTime();
 
       const jobs: Map<string, CronJob> = new Map();
       let handlers: Service[] = await getHandlers(options.cwd);
@@ -42,8 +47,11 @@ export const start = new Command()
         const handler: Service = handlers[handlerKey];
 
         if (jobs.has(handler.name)) {
-          logger.warn(
-            `Job "${handler.name}" not registered because another job with the same name already exists.`
+          logger.log(
+            logger.yellow('[warn]'),
+            `Job "${chalk.bold(
+              handler.name
+            )}" not registered because another job with the same name already exists.`
           );
           continue;
         }
@@ -51,18 +59,21 @@ export const start = new Command()
         const handleTick = async () => {
           if (handler.preventOverlapping) {
             if (handler.running) {
-              logger.warn(`Job "${handler.name}" skipped because it is already running.`);
+              logger.log(
+                logger.yellow('[warn]'),
+                `Job "${chalk.bold(handler.name)}" skipped because it is already running.`
+              );
               return;
             }
             handler.running = true;
           }
 
           try {
-            logger.info(`Job "${handler.name}" started.`);
+            logger.log(logger.cyan('[info]'), `Job "${chalk.bold(handler.name)}" started.`);
             await handler.handle();
-            logger.success(`Job "${handler.name}" completed.`);
+            logger.log(logger.green('[success]'), `Job "${chalk.bold(handler.name)}" completed.`);
           } catch (error) {
-            logger.error(`Job "${handler.name}" crashed.`);
+            logger.log(logger.red('[error]'), `Job "${chalk.bold(handler.name)}" crashed.`);
           }
 
           if (handler.preventOverlapping) {
@@ -70,27 +81,33 @@ export const start = new Command()
           }
         };
 
-        const job: CronJob = new CronJob('* * * * *', handleTick, null, false, 'Asia/Tehran');
+        const job: CronJob = new CronJob('* * * * *', handleTick, null, false, options.timeZone);
         job.setTime(handler.interval);
 
         jobs.set(handler.name, job);
       }
 
-      logger.info(`Starting ${jobs.size} jobs.`);
+      logger.log(
+        logger.cyan('[info]'),
+        `Found ${chalk.bold(handlers.length)} handlers in ${logger.highlight(options.cwd)}.`
+      );
 
       for (const job of jobs.values()) {
         job.start();
       }
 
-      process.on('SIGINT', onSigint(jobs));
+      process.on('SIGINT', onExit(jobs));
+      process.on('SIGTERM', onExit(jobs));
 
-      logger.success('All jobs started.');
+      const elapsed = new Date().getTime() - startTime;
+      logger.log(logger.green('[success]'), 'All services registered in', elapsed, 'ms.');
+      logger.log('');
     } catch (e) {
       handleError(e);
     }
   });
 
-const onSigint = (jobs: Map<string, CronJob>) => {
+const onExit = (jobs: Map<string, CronJob>) => {
   return () => {
     const stopProgress = ora('Stopping all jobs.').start();
     for (const job of jobs.values()) {
@@ -103,13 +120,15 @@ const onSigint = (jobs: Map<string, CronJob>) => {
 
 async function getModule(_path: string): Promise<any> {
   const absolutePath = path.isAbsolute(_path) ? _path : path.resolve(process.cwd(), _path);
-  return await import(absolutePath);
+  const module = await import(absolutePath);
+
+  return module;
 }
 
 async function getHandlers(cwd: string): Promise<Service[]> {
-  const handlersPath = path.join(cwd, 'services');
+  const handlerPath = path.join(cwd, 'services');
 
-  const { data: files, error } = await readDirectoryFiles(handlersPath);
+  const { data: files, error } = await readDirectoryFiles(handlerPath);
   if (!files || error) {
     throw new Error('Failed to read handlers directory');
   }
