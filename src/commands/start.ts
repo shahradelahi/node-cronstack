@@ -1,3 +1,4 @@
+import { BaseService } from '@/lib.ts';
 import logger from '@/logger.ts';
 import { Service } from '@/typings.ts';
 import { handleError } from '@/utils/handle-error.ts';
@@ -89,7 +90,7 @@ export const start = new Command()
 
       logger.log(
         logger.cyan('[info]'),
-        `Found ${chalk.bold(handlers.length)} handlers in ${logger.highlight(options.cwd)}.`
+        `Found ${chalk.bold(handlers.length)} handlers in ${chalk.bold(options.cwd)} directory.`
       );
 
       for (const job of jobs.values()) {
@@ -138,6 +139,10 @@ async function getHandlers(cwd: string): Promise<Service[]> {
     const module = await getModule(file);
     if (!module.default) {
       throw new Error(`Handler ${file} does not have a default export`);
+    }
+
+    if (!(module.default instanceof BaseService)) {
+      throw new Error(`Handler ${file} must implement BaseService`);
     }
 
     const handler = new module.default() as Service;
