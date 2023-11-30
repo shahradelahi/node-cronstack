@@ -1,7 +1,6 @@
 import { isJson } from '@/utils/is-json.ts';
 import { promises } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { type PackageJson } from 'type-fest';
 
 export async function getPackageInfo() {
@@ -16,7 +15,5 @@ export async function getPackageInfo() {
 }
 
 function getPackageFilePath(filePath: string) {
-  let distPath = fileURLToPath(new URL(`.`, import.meta.url));
-
-  return path.resolve(distPath, filePath);
+  return path.resolve(__dirname, filePath);
 }
