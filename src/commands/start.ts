@@ -1,12 +1,10 @@
-import { BaseService } from '@/lib.ts';
+import { getHandlers } from '@/lib/handler.ts';
 import logger from '@/logger.ts';
 import { Service } from '@/typings.ts';
-import { handleError } from '@/utils/handle-error.ts';
-import { readDirectoryFiles } from '@/utils/read-directory-files.ts';
+import { handleError, sendError } from '@/utils/handle-error.ts';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { CronJob } from 'cron';
-import path from 'node:path';
+import { CronJob, CronTime } from 'cron';
 import ora from 'ora';
 import { z } from 'zod';
 
@@ -37,62 +35,22 @@ export const start = new Command()
 
       const startTime = new Date().getTime();
 
-      const jobs: Map<string, CronJob> = new Map();
       let handlers: Service[] = await getHandlers(options.cwd);
 
       if (options.services.length > 0) {
         handlers = handlers.filter((handler) => options.services.includes(handler.name));
       }
 
-      for (const handlerKey in handlers) {
-        const handler: Service = handlers[handlerKey];
-
-        if (jobs.has(handler.name)) {
-          logger.log(
-            logger.yellow('[warn]'),
-            `Job "${chalk.bold(
-              handler.name
-            )}" not registered because another job with the same name already exists.`
-          );
-          continue;
-        }
-
-        const handleTick = async () => {
-          if (handler.preventOverlapping) {
-            if (handler.running) {
-              logger.log(
-                logger.yellow('[warn]'),
-                `Job "${chalk.bold(handler.name)}" skipped because it is already running.`
-              );
-              return;
-            }
-            handler.running = true;
-          }
-
-          try {
-            logger.log(logger.cyan('[info]'), `Job "${chalk.bold(handler.name)}" started.`);
-            await handler.handle();
-            logger.log(logger.green('[success]'), `Job "${chalk.bold(handler.name)}" completed.`);
-          } catch (error) {
-            logger.log(logger.red('[error]'), `Job "${chalk.bold(handler.name)}" crashed.`);
-          }
-
-          if (handler.preventOverlapping) {
-            handler.running = false;
-          }
-        };
-
-        const job: CronJob = new CronJob('* * * * *', handleTick, null, false, options.timeZone);
-        job.setTime(handler.interval);
-
-        jobs.set(handler.name, job);
+      if (handlers.length === 0) {
+        logger.log(
+          logger.yellow('[warn]'),
+          `No services found in ${chalk.bold(options.cwd)} directory.`
+        );
+        process.exitCode = 1;
+        return;
       }
 
-      logger.log(
-        logger.cyan('[info]'),
-        `Found ${chalk.bold(handlers.length)} handlers in ${chalk.bold(options.cwd)} directory.`
-      );
-
+      const jobs = await registerHandlers(handlers);
       for (const job of jobs.values()) {
         job.start();
       }
@@ -101,12 +59,82 @@ export const start = new Command()
       process.on('SIGTERM', onExit(jobs));
 
       const elapsed = new Date().getTime() - startTime;
-      logger.log(logger.green('[success]'), 'All services registered in', elapsed, 'ms.');
+      logger.log(
+        logger.green('[success]'),
+        `Registered ${chalk.bold(jobs.size)} jobs in ${chalk.bold(elapsed)}ms.`
+      );
       logger.log('');
     } catch (e) {
       handleError(e);
     }
   });
+
+async function registerHandlers(handlers: Service[]) {
+  const jobs: Map<string, CronJob> = new Map();
+
+  for (const handlerKey in handlers) {
+    const handler: Service = handlers[handlerKey];
+
+    if (jobs.has(handler.name)) {
+      logger.log(
+        logger.yellow('[warn]'),
+        `Job "${chalk.bold(
+          handler.name
+        )}" not registered because another job with the same name already exists.`
+      );
+      continue;
+    }
+
+    const handleTick = async () => {
+      if (handler.preventOverlapping) {
+        if (handler.running) {
+          logger.log(
+            logger.yellow('[warn]'),
+            `Job "${chalk.bold(handler.name)}" skipped because it is already running.`
+          );
+          return;
+        }
+        handler.running = true;
+      }
+
+      try {
+        if (handler.verbose) {
+          logger.log(chalk.cyan('[info]'), chalk.gray(`[${handler.name}]`), `Job started.`);
+        }
+        await handler.handle().then(() => {
+          if (handler.verbose) {
+            logger.log(chalk.green('[success]'), chalk.gray(`[${handler.name}]`), `Job completed.`);
+          }
+        });
+      } catch (error) {
+        logger.log(chalk.red('[error]'), chalk.gray(`[${handler.name}]`), `Job crashed.`);
+        sendError(error);
+      }
+
+      if (handler.preventOverlapping) {
+        handler.running = false;
+      }
+    };
+
+    const job: CronJob = new CronJob('* * * * *', handleTick, null, false, 'UTC');
+
+    const { interval } = handler;
+
+    if (interval instanceof CronTime) {
+      job.setTime(interval);
+    } else if (typeof (interval as any) === 'string') {
+      job.setTime(new CronTime(interval));
+    } else {
+      throw new Error(
+        `Invalid interval type "${typeof handler.interval}" for job "${handler.name}"`
+      );
+    }
+
+    jobs.set(handler.name, job);
+  }
+
+  return jobs;
+}
 
 const onExit = (jobs: Map<string, CronJob>) => {
   return () => {
@@ -118,36 +146,3 @@ const onExit = (jobs: Map<string, CronJob>) => {
     process.exit(0);
   };
 };
-
-async function getModule(_path: string): Promise<any> {
-  const absolutePath = path.isAbsolute(_path) ? _path : path.resolve(process.cwd(), _path);
-  const module = await import(absolutePath);
-
-  return module;
-}
-
-async function getHandlers(cwd: string): Promise<Service[]> {
-  const handlerPath = path.join(cwd, 'services');
-
-  const { data: files, error } = await readDirectoryFiles(handlerPath);
-  if (!files || error) {
-    throw new Error('Failed to read handlers directory');
-  }
-
-  const handlers: Service[] = [];
-  for (const file of files) {
-    const module = await getModule(file);
-    if (!module.default) {
-      throw new Error(`Handler ${file} does not have a default export`);
-    }
-
-    if (!(module.default instanceof BaseService)) {
-      throw new Error(`Handler ${file} must implement BaseService`);
-    }
-
-    const handler = new module.default() as Service;
-    handlers.push(handler);
-  }
-
-  return handlers;
-}

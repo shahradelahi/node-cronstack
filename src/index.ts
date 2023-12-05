@@ -1,4 +1,4 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 
 import { fsAccess } from '@/utils/fs-access.ts';
 import { getPackageInfo } from '@/utils/get-package-info.ts';
@@ -15,7 +15,7 @@ async function main() {
   const program = new Command()
     .name('microservice')
     .description('Manage your microservice')
-    .version(packageInfo.version || '1.0.0', '-v, --version', 'display the version number');
+    .version(packageInfo?.version || '0.0.0-dev', '-v, --version', 'display the version number');
 
   if (await fsAccess('.env')) {
     dotenv.config();

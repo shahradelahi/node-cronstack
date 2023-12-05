@@ -24,6 +24,17 @@ export function log(...args: unknown[]) {
   console.log(...args);
 }
 
+export const ServiceLogger = (serviceName: string) =>
+  <const>{
+    log: (...args: string[]) => console.log(chalk.gray(`[${serviceName}]`), chalk.red(...args)),
+    error: (...args: string[]) => console.log(chalk.gray(`[${serviceName}]`), chalk.red(...args)),
+    warn: (...args: string[]) => console.log(chalk.gray(`[${serviceName}]`), chalk.yellow(...args)),
+    info: (...args: string[]) => console.log(chalk.gray(`[${serviceName}]`), chalk.cyan(...args)),
+    success: (...args: string[]) =>
+      console.log(chalk.gray(`[${serviceName}]`), chalk.green(...args)),
+    highlight: (...args: string[]) => chalk.cyan(...args)
+  };
+
 export default {
   error,
   warn,
