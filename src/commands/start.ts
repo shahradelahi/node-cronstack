@@ -13,6 +13,8 @@ export const start = new Command()
   .description('Start all services')
   .argument('[services...]', 'service names to start', [])
   .option('--time-zone <timeZone>', 'the time zone to use. defaults to "UTC".', 'UTC')
+  .option('--once, --run-once', 'Run services once and exit. useful for testing.')
+  .option('--once-now', 'Run services once immediately and exit. useful for testing.')
   .option(
     '-c, --cwd <cwd>',
     'the working directory. defaults to the current directory.',
@@ -26,7 +28,9 @@ export const start = new Command()
         .object({
           timeZone: z.string().default('UTC'),
           cwd: z.string().default(process.cwd()),
-          services: z.array(z.string()).default([])
+          services: z.array(z.string()).default([]),
+          runOnce: z.boolean().default(false),
+          onceNow: z.boolean().default(false)
         })
         .parse({
           ...opts,
@@ -51,8 +55,20 @@ export const start = new Command()
         return;
       }
 
+      // if options.onceNow is true, run handlers on parallel and exit
+      if (options.onceNow) {
+        const promises = handlers.map((handler) => handler.handle());
+        await Promise.all(promises);
+        process.exitCode = 0;
+        return;
+      }
+
       progress.start('Registering services.');
-      const jobs = await registerHandlers(handlers, options.timeZone);
+      const jobs = await registerHandlers({
+        handlers,
+        timeZone: options.timeZone,
+        once: options.runOnce || options.onceNow
+      });
       for (const job of jobs.values()) {
         job.start();
       }
@@ -68,7 +84,13 @@ export const start = new Command()
     }
   });
 
-async function registerHandlers(handlers: Service[], timeZone = 'UTC') {
+type RegisterOptions = {
+  handlers: Service[];
+  once?: boolean;
+  timeZone?: string;
+};
+
+async function registerHandlers({ handlers, ...opts }: RegisterOptions) {
   const jobs: Map<string, CronJob> = new Map();
 
   for (const handlerKey in handlers) {
@@ -102,7 +124,11 @@ async function registerHandlers(handlers: Service[], timeZone = 'UTC') {
         }
         await handler.handle().then(() => {
           if (handler.verbose) {
-            logger.log(chalk.green('[success]'), chalk.gray(`[${handler.name}]`), `Job completed.`);
+            logger.log(
+              chalk.green('[success]'),
+              chalk.gray(`[${handler.name}]`),
+              `Job has completed.`
+            );
           }
         });
       } catch (error) {
@@ -115,10 +141,15 @@ async function registerHandlers(handlers: Service[], timeZone = 'UTC') {
       }
     };
 
-    const job: CronJob = new CronJob('* * * * *', handleTick, null, false, timeZone);
+    const job: CronJob = new CronJob('* * * * *', handleTick, null, false, opts.timeZone);
+    job.addCallback(() => {
+      // if opts.once is true, stop the job
+      if (opts.once) {
+        job.stop();
+      }
+    });
 
     const { interval } = handler;
-
     if (interval instanceof CronTime) {
       job.setTime(interval);
     } else if (typeof (interval as any) === 'string') {

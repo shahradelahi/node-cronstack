@@ -1,7 +1,7 @@
 {
   "name": "@litehex/microservice",
   "description": "A minimal microservice framework for Node.js",
-  "version": "0.1.0-alpha.18",
+  "version": "0.1.0-alpha.19",
   "main": "dist/lib.cjs",
   "module": "dist/lib.js",
   "types": "dist/lib.d.cts",
