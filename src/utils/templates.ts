@@ -1,14 +1,13 @@
 import cronstrue from 'cronstrue';
 
-export const MICROSERVICE = `import { BaseService, logger } from '@litehex/microservice';
+export const MICROSERVICE = `import { BaseService } from '@litehex/microservice';
 import { CronTime } from 'cron';
 
 export default class Handler extends BaseService {
-  name: string = "%NAME%";
   interval: CronTime = new CronTime("%INTERVAL%"); // %HUMAN_INTERVAL%
 
   async handle(): Promise<void> {
-    logger.log("Hello from %NAME% microservice!");
+    this.logger.log("Hello from %NAME% microservice!");
   }
 }`;
 

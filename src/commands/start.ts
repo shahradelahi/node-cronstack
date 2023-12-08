@@ -43,7 +43,7 @@ export const start = new Command()
 
       if (handlers.length === 0) {
         logger.log(
-          logger.yellow('[warn]'),
+          logger.red('[error]'),
           `No services found in ${chalk.bold(options.cwd)} directory.`
         );
         process.exitCode = 1;

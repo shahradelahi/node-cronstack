@@ -30,7 +30,7 @@ export const add = new Command()
         })
         .parse({ name, ...opts });
 
-      // create "services" directory and add "services/hello.ts" sample service
+      // create "services" directory and add "services/+hello.service.ts" sample service
       const cwd = path.resolve(options.cwd);
       const servicesPath = path.join(cwd, 'services');
 
@@ -38,7 +38,7 @@ export const add = new Command()
         await promises.mkdir(servicesPath);
       }
 
-      const servicePath = path.join(servicesPath, `${name}.ts`);
+      const servicePath = path.join(servicesPath, `+${name}.service.ts`);
       if (!(await fsAccess(servicePath))) {
         await promises.writeFile(servicePath, namedMicroservice(name, options.interval));
       }

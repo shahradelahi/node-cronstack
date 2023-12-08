@@ -42,7 +42,7 @@ export const init = new Command()
         await promises.mkdir(servicesPath);
       }
 
-      const helloPath = path.join(servicesPath, 'hello.ts');
+      const helloPath = path.join(servicesPath, '+hello.service.ts');
       if (!(await fsAccess(helloPath))) {
         await promises.writeFile(helloPath, namedMicroservice('hello'));
       }
@@ -58,7 +58,7 @@ export const init = new Command()
         const dependenciesSpinner = ora(`Installing dependencies...`)?.start();
 
         const packageManager = await getPackageManager(cwd);
-        const deps = ['cron', 'dotenv', 'tsx'];
+        const deps = ['@litehex/microservice', 'cron', 'dotenv'];
 
         await execa(packageManager, [packageManager === 'npm' ? 'install' : 'add', ...deps], {
           cwd: options.cwd
