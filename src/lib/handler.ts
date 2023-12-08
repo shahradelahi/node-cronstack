@@ -44,9 +44,9 @@ export async function getTranspiledHandler(
     path.basename(handlerPath.path).replace(/\.(ts|js)$/, '.js')
   );
   if (path.basename(file) !== '+service.js') {
-    // rename file to +service.js
     const newFile = path.join(handlerBuildDir, '+service.js');
     await promises.rename(file, newFile);
+    await promises.rename(`${file}.map`, `${newFile}.map`);
   }
 
   const module = await getModule(path.join(handlerBuildDir, '+service.js'));
