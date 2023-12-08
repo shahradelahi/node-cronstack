@@ -1,5 +1,5 @@
 import { transpileFile } from '@/lib/transpile.ts';
-import logger, { ServiceLogger } from '@/logger.ts';
+import { ServiceLogger } from '@/logger.ts';
 import { Service } from '@/typings.ts';
 import { fsAccess } from '@/utils/fs-access.ts';
 import { getModule } from '@/utils/get-module.ts';
@@ -12,10 +12,15 @@ import {
 import { promises } from 'node:fs';
 import path from 'node:path';
 
-export async function getTranspiledHandler(
+type TranspiledHandler = {
+  filePath: string;
+  name: string;
+};
+
+export async function transpiledHandler(
   cwd: string,
   handlerPath: HandlerPath
-): Promise<Service> {
+): Promise<TranspiledHandler> {
   const buildDir = path.join(cwd, '.microservice');
   const handlerBuildDir = path.join(buildDir, handlerPath.name);
 
@@ -24,9 +29,6 @@ export async function getTranspiledHandler(
   }
 
   const format = await getModuleType();
-
-  const relativePath = path.relative(cwd, handlerPath.path);
-  logger.log(logger.cyan('[info]'), `Transpiling handler ${relativePath}`);
 
   // transpile handler
   const { error } = await transpileFile({
@@ -49,29 +51,50 @@ export async function getTranspiledHandler(
     await promises.rename(`${file}.map`, `${newFile}.map`);
   }
 
-  const module = await getModule(path.join(handlerBuildDir, '+service.js'));
+  return {
+    filePath: path.join(handlerBuildDir, '+service.js'),
+    name: handlerPath.name
+  };
+}
+
+async function getHandler({ filePath, name }: TranspiledHandler): Promise<Service> {
+  const format = await getModuleType();
+
+  const module = await getModule(filePath);
   if (!module.default) {
-    throw new Error(`Handler ${file} does not have a default export`);
+    throw new Error(`Handler ${filePath} does not have a default export`);
   }
 
   const handler = format === 'cjs' ? module.default['default'] : module.default;
-  // if (!(handler instanceof BaseService)) {
-  //   throw new Error(`Handler ${file} must implement BaseService`);
-  // }
+  if (!handler) {
+    throw new Error(`Handler not found in ${filePath}`);
+  }
 
   const handlerInstance = new (handler as any)() as Service;
-  handlerInstance.name = handlerPath.name;
-  handlerInstance.logger = ServiceLogger(handlerPath.name);
+  handlerInstance.name = name;
+  handlerInstance.logger = ServiceLogger(name);
 
   return handlerInstance;
 }
 
-export async function getHandlers(cwd: string): Promise<Service[]> {
-  const handlerPaths = await getHandlerPaths(cwd);
+type GetHandlerOptions = {
+  cwd: string;
+  include: string[];
+};
+
+export async function getHandlers({ cwd, ...opts }: GetHandlerOptions): Promise<Service[]> {
+  let rawPaths = await getHandlerPaths(cwd);
+
+  if (Array.isArray(opts.include) && opts.include.length > 0) {
+    rawPaths = rawPaths.filter((handler) => opts.include.includes(handler.name));
+  }
 
   const handlers: Service[] = [];
-  for (const handlerPath of handlerPaths) {
-    const handler = await getTranspiledHandler(cwd, handlerPath);
+  const modulePaths = await Promise.all(
+    rawPaths.map((handlerPath) => transpiledHandler(cwd, handlerPath))
+  );
+  for (const modulePath of modulePaths) {
+    const handler = await getHandler(modulePath);
     handlers.push(handler);
   }
 
@@ -103,6 +126,10 @@ export async function getHandlerPaths(cwd: string): Promise<HandlerPath[]> {
   const handlerPath = path.join(cwd, 'services');
 
   const { data: contents, error } = await readDirectory(handlerPath);
+  if (!contents || error) {
+    throw new Error(`Failed to read directory ${handlerPath}`);
+  }
+
   const { files, directories } = separateFilesAndDirectories(contents || []);
 
   const paths: HandlerPath[] = [];

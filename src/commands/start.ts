@@ -35,11 +35,12 @@ export const start = new Command()
 
       const startTime = new Date().getTime();
 
-      let handlers: Service[] = await getHandlers(options.cwd);
-
-      if (options.services.length > 0) {
-        handlers = handlers.filter((handler) => options.services.includes(handler.name));
-      }
+      const progress = ora('Compiling services.').start();
+      let handlers: Service[] = await getHandlers({
+        cwd: options.cwd,
+        include: options.services
+      });
+      progress.succeed('All services compiled.');
 
       if (handlers.length === 0) {
         logger.log(
@@ -50,7 +51,8 @@ export const start = new Command()
         return;
       }
 
-      const jobs = await registerHandlers(handlers);
+      progress.start('Registering services.');
+      const jobs = await registerHandlers(handlers, options.timeZone);
       for (const job of jobs.values()) {
         job.start();
       }
@@ -59,17 +61,14 @@ export const start = new Command()
       process.on('SIGTERM', onExit(jobs));
 
       const elapsed = new Date().getTime() - startTime;
-      logger.log(
-        logger.green('[success]'),
-        `Registered ${chalk.bold(jobs.size)} jobs in ${chalk.bold(elapsed)}ms.`
-      );
+      progress.succeed(`Registered ${chalk.bold(jobs.size)} jobs in ${chalk.bold(elapsed)}ms.`);
       logger.log('');
     } catch (e) {
       handleError(e);
     }
   });
 
-async function registerHandlers(handlers: Service[]) {
+async function registerHandlers(handlers: Service[], timeZone = 'UTC') {
   const jobs: Map<string, CronJob> = new Map();
 
   for (const handlerKey in handlers) {
@@ -99,7 +98,7 @@ async function registerHandlers(handlers: Service[]) {
 
       try {
         if (handler.verbose) {
-          logger.log(chalk.cyan('[info]'), chalk.gray(`[${handler.name}]`), `Job started.`);
+          logger.log(chalk.cyan('[info]'), chalk.gray(`[${handler.name}]`), `Job has started.`);
         }
         await handler.handle().then(() => {
           if (handler.verbose) {
@@ -107,7 +106,7 @@ async function registerHandlers(handlers: Service[]) {
           }
         });
       } catch (error) {
-        logger.log(chalk.red('[error]'), chalk.gray(`[${handler.name}]`), `Job crashed.`);
+        logger.log(chalk.red('[error]'), chalk.gray(`[${handler.name}]`), `Job has crashed.`);
         sendError(error);
       }
 
@@ -116,7 +115,7 @@ async function registerHandlers(handlers: Service[]) {
       }
     };
 
-    const job: CronJob = new CronJob('* * * * *', handleTick, null, false, 'UTC');
+    const job: CronJob = new CronJob('* * * * *', handleTick, null, false, timeZone);
 
     const { interval } = handler;
 
