@@ -13,8 +13,8 @@ async function main() {
   const packageInfo = await getPackageInfo();
 
   const program = new Command()
-    .name('microservice')
-    .description('Manage your microservice')
+    .name('taskflow')
+    .description('Manage your services with TaskFlow.')
     .version(packageInfo?.version || '0.0.0-dev', '-v, --version', 'display the version number');
 
   if (await fsAccess('.env')) {

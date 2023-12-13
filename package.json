@@ -1,7 +1,7 @@
 {
-  "name": "@litehex/microservice",
-  "description": "A minimal microservice framework for Node.js",
-  "version": "0.1.0-alpha.19",
+  "name": "@litehex/taskflow",
+  "description": "A versatile task management and automation library with CLI tools for seamless development.",
+  "version": "0.1.0",
   "main": "dist/lib.cjs",
   "module": "dist/lib.js",
   "types": "dist/lib.d.cts",
@@ -60,7 +60,7 @@
   "author": "Shahrad Elahi <shahrad@litehex.com> (https://github.com/shahradelahi)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shahradelahi/microservice.git"
+    "url": "https://github.com/shahradelahi/taskflow.git"
   },
   "license": "GPL-3.0",
   "publishConfig": {

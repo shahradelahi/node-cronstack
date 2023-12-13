@@ -29,6 +29,9 @@ dependencies:
   tsup:
     specifier: ^8.0.1
     version: 8.0.1(typescript@5.3.2)
+  typescript:
+    specifier: ^5.3.2
+    version: 5.3.2
   zod:
     specifier: ^3.22.4
     version: 3.22.4
@@ -61,9 +64,6 @@ devDependencies:
   type-fest:
     specifier: ^4.8.2
     version: 4.8.2
-  typescript:
-    specifier: ^5.3.2
-    version: 5.3.2
 
 packages:
 
@@ -1814,6 +1814,7 @@ packages:
     resolution: {integrity: sha512-6l+RyNy7oAHDfxC4FzSJcz9vnjTKxrLpDG5M2Vu4SHRVNg6xzqZp6LYSR9zjqQTu8DU/f5xwxUdADOkbrIX2gQ==}
     engines: {node: '>=14.17'}
     hasBin: true
+    dev: false
 
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}

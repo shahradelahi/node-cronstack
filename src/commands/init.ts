@@ -13,7 +13,7 @@ import { z } from 'zod';
 
 export const init = new Command()
   .command('init')
-  .description('Initialize a new microservice')
+  .description('Initialize your project.')
   .option(
     '--nodep',
     'skip installing dependencies. useful if you want to install dependencies yourself.',
@@ -58,7 +58,7 @@ export const init = new Command()
         const dependenciesSpinner = ora(`Installing dependencies...`)?.start();
 
         const packageManager = await getPackageManager(cwd);
-        const deps = ['@litehex/microservice', 'cron', 'dotenv'];
+        const deps = ['@litehex/taskflow', 'cron', 'dotenv'];
 
         await execa(packageManager, [packageManager === 'npm' ? 'install' : 'add', ...deps], {
           cwd: options.cwd
@@ -68,7 +68,7 @@ export const init = new Command()
         logger.log('');
       }
 
-      logger.info(chalk.green('Success!'), 'Microservice initialized successfully.');
+      logger.info(chalk.green('Success!'), 'Project initialized.');
       logger.log('');
     } catch (e) {
       handleError(e);
