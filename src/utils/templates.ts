@@ -1,6 +1,6 @@
 import cronstrue from 'cronstrue';
 
-export const MICROSERVICE = `import { BaseService } from '@litehex/microservice';
+export const MICROSERVICE = `import { BaseService } from '@litehex/taskflow';
 import { CronTime } from 'cron';
 
 export default class Handler extends BaseService {

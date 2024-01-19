@@ -5,5 +5,5 @@ export async function getModule<T = any>(modulePath: string): Promise<T> {
     ? modulePath
     : path.resolve(process.cwd(), modulePath);
 
-  return import(absolutePath);
+  return import(`${absolutePath}?_t=${Date.now()}`);
 }
