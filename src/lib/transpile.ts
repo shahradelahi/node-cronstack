@@ -8,9 +8,9 @@ export async function transpileFile(options: Options): Promise<SafeReturn<boolea
       target: 'esnext', // Specify the target environment
       clean: true, // Clean the output directory before building
       bundle: true, // Bundle dependencies imported with esm
+      sourcemap: true, // Generate source maps
       ...options,
       platform: 'node', // Specify the target platform
-      sourcemap: true, // Generate source maps
       keepNames: true, // Keep symbol names
       config: false, // Disable config file
       silent: true // Suppress output (default is false)

@@ -58,7 +58,7 @@ export const init = new Command()
         const dependenciesSpinner = ora(`Installing dependencies...`)?.start();
 
         const packageManager = await getPackageManager(cwd);
-        const deps = ['@litehex/taskflow', 'cron', 'dotenv'];
+        const deps = ['@litehex/taskflow'];
 
         await execa(packageManager, [packageManager === 'npm' ? 'install' : 'add', ...deps], {
           cwd: options.cwd

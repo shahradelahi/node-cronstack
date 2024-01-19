@@ -4,7 +4,7 @@ import { fsAccess } from '@/utils/fs-access.ts';
 import { getPackageInfo } from '@/utils/get-package-info.ts';
 import { Command } from 'commander';
 import dotenv from 'dotenv';
-import { add, init, start } from './commands';
+import { add, build, dev, init, start } from './commands';
 
 process.on('SIGINT', () => process.exit(0));
 process.on('SIGTERM', () => process.exit(0));
@@ -21,7 +21,7 @@ async function main() {
     dotenv.config();
   }
 
-  program.addCommand(init).addCommand(start).addCommand(add);
+  program.addCommand(add).addCommand(build).addCommand(dev).addCommand(init).addCommand(start);
 
   program.parse();
 }
