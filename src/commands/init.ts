@@ -21,6 +21,10 @@ export const init = new Command()
     false
   )
   .option(
+    '--package-manager <package-manager>',
+    'the package manager to use. defaults to the detected package manager.'
+  )
+  .option(
     '-c, --cwd <cwd>',
     'the working directory. defaults to the current directory.',
     process.cwd()
@@ -32,6 +36,7 @@ export const init = new Command()
       const options = z
         .object({
           nodep: z.boolean().default(false),
+          packageManager: z.string().optional(),
           cwd: z.string().default(process.cwd())
         })
         .parse(opts);
@@ -58,8 +63,14 @@ export const init = new Command()
       } else {
         const dependenciesSpinner = ora(`Installing dependencies...`)?.start();
 
-        const packageManager = await getPackageManager(cwd);
+        const packageManager = options.packageManager ?? (await getPackageManager(cwd));
         const deps = ['@litehex/taskflow'];
+
+        if (!(await fsAccess(path.join(cwd, 'package.json')))) {
+          await execa(packageManager, [packageManager === 'npm' ? 'init' : 'init', '-y'], {
+            cwd: options.cwd
+          });
+        }
 
         await execa(packageManager, [packageManager === 'npm' ? 'install' : 'add', ...deps], {
           cwd: options.cwd
