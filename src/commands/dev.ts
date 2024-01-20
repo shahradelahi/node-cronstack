@@ -128,7 +128,6 @@ async function handleReloadSignal(options: DevOptions) {
     cwd: options.cwd,
     include: options.services
   });
-  console.log(handlers);
 
   await loadHandlers({
     handlers,

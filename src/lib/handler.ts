@@ -1,3 +1,4 @@
+import { BUILD_OUTPUT_DIR } from '@/constants.ts';
 import { transpileFile } from '@/lib/transpile.ts';
 import logger, { ServiceLogger } from '@/logger.ts';
 import { Service } from '@/typings.ts';
@@ -38,8 +39,6 @@ export async function getHandler({ filePath, name }: TranspiledHandler): Promise
   handlerInstance.name = name;
   handlerInstance.logger = ServiceLogger(name);
 
-  console.log(handlerInstance);
-
   return handlerInstance;
 }
 
@@ -61,7 +60,7 @@ export async function getHandlers({
     rawPaths = rawPaths.filter((handler) => include.includes(handler.name));
   }
 
-  const buildDir = path.join(cwd, '.microservice');
+  const buildDir = path.join(cwd, BUILD_OUTPUT_DIR);
   if (await fsAccess(buildDir)) {
     await promises.rm(buildDir, { recursive: true });
   }

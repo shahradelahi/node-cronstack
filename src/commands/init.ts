@@ -1,3 +1,4 @@
+import { BUILD_OUTPUT_DIR } from '@/constants.ts';
 import logger from '@/logger.ts';
 import { fsAccess } from '@/utils/fs-access.ts';
 import { getPackageManager } from '@/utils/get-package-manager.ts';
@@ -78,18 +79,12 @@ export const init = new Command()
 async function updateGitignore() {
   if (await fsAccess('.gitignore')) {
     const gitignore = (await promises.readFile('.gitignore')).toString();
-    const hasMicroservice = gitignore.includes('.microservice');
+    const hasMicroservice = gitignore.includes(BUILD_OUTPUT_DIR);
     const hasEnv = gitignore.includes('.env');
     if (!hasMicroservice) {
       await promises.appendFile(
         '.gitignore',
-        [
-          '',
-          '# Microservice',
-          hasMicroservice ? false : '.microservice',
-          hasEnv ? false : '.env',
-          ''
-        ]
+        ['', '# TaskFlow', hasMicroservice ? false : BUILD_OUTPUT_DIR, hasEnv ? false : '.env', '']
           .filter(Boolean)
           .join('\n')
       );

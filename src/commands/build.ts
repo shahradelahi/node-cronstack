@@ -1,3 +1,4 @@
+import { BUILD_OUTPUT_DIR } from '@/constants.ts';
 import { getHandlerPaths, getHandlers, HandlerPath } from '@/lib/handler.ts';
 import { transpileFile } from '@/lib/transpile.ts';
 import logger from '@/logger.ts';
@@ -38,7 +39,7 @@ export const build = new Command()
       const startTime = new Date().getTime();
       const progress = ora('Compiling services.').start();
 
-      const buildDir = path.join(options.cwd, '.microservice');
+      const buildDir = path.join(options.cwd, BUILD_OUTPUT_DIR);
       if (await fsAccess(buildDir)) {
         await promises.rm(buildDir, { recursive: true });
       }

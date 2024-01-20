@@ -1,3 +1,4 @@
+import { BUILD_OUTPUT_DIR } from '@/constants.ts';
 import { getHandler, getHandlerPaths, registerHandlers } from '@/lib/handler.ts';
 import logger from '@/logger.ts';
 import { Service } from '@/typings.ts';
@@ -37,7 +38,7 @@ export const start = new Command()
       const startTime = new Date().getTime();
       const progress = ora('Registering services').start();
 
-      let rawPaths = await getHandlerPaths(options.cwd, '.microservice');
+      let rawPaths = await getHandlerPaths(options.cwd, BUILD_OUTPUT_DIR);
       if (options.services.length > 0) {
         rawPaths = rawPaths.filter((handler) => options.services.includes(handler.name));
       }
