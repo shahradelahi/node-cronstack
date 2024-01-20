@@ -1,7 +1,7 @@
 {
   "name": "@litehex/taskflow",
   "description": "A versatile task management and automation library with CLI tools for seamless development.",
-  "version": "0.2.0-canary.1",
+  "version": "0.2.0-canary.2",
   "main": "dist/lib.cjs",
   "module": "dist/lib.js",
   "types": "dist/lib.d.cts",
@@ -42,6 +42,7 @@
     "execa": "^8.0.1",
     "ora": "^7.0.1",
     "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -59,8 +60,7 @@
     "mocha": "^10.2.0",
     "prettier": "^3.1.0",
     "tsx": "^4.6.2",
-    "type-fest": "^4.8.2",
-    "typescript": "^5.3.2"
+    "type-fest": "^4.8.2"
   },
   "peerDependencies": {
     "cron": "^3.1.6"
