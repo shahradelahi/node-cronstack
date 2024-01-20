@@ -1,10 +1,9 @@
 import cronstrue from 'cronstrue';
 
 export const MICROSERVICE = `import { BaseService } from '@litehex/taskflow';
-import { CronTime } from 'cron';
 
 export default class Handler extends BaseService {
-  interval: CronTime = new CronTime("%INTERVAL%"); // %HUMAN_INTERVAL%
+  interval: string = "%INTERVAL%"; // %HUMAN_INTERVAL%
 
   async handle(): Promise<void> {
     this.logger.log("Hello from %NAME% microservice!");

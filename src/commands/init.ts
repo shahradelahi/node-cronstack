@@ -1,6 +1,7 @@
 import { BUILD_OUTPUT_DIR } from '@/constants.ts';
 import logger from '@/logger.ts';
 import { fsAccess } from '@/utils/fs-access.ts';
+import { getPackageInfo } from '@/utils/get-package-info.ts';
 import { getPackageManager } from '@/utils/get-package-manager.ts';
 import { handleError } from '@/utils/handle-error.ts';
 import { namedMicroservice } from '@/utils/templates.ts';
@@ -76,6 +77,8 @@ export const init = new Command()
           cwd: options.cwd
         });
 
+        await addScripts(options.cwd);
+
         dependenciesSpinner?.succeed('Done!');
         logger.log('');
       }
@@ -101,4 +104,35 @@ async function updateGitignore() {
       );
     }
   }
+}
+
+async function addScripts(cwd: string) {
+  const packageInfo = (await getPackageInfo(cwd)) ?? {};
+
+  const scripts = {
+    start: 'taskflow start',
+    build: 'taskflow build',
+    dev: 'taskflow dev'
+  };
+
+  if (!packageInfo?.scripts) {
+    packageInfo.scripts = {};
+  }
+
+  // if there are already scripts with the same name, add "taskflow" prefix
+  let hasConflicts = false;
+  for (const scriptName of Object.keys(scripts)) {
+    if (packageInfo.scripts[scriptName]) {
+      hasConflicts = true;
+      break;
+    }
+  }
+
+  // add scripts
+  for (const scriptName of Object.keys(scripts)) {
+    packageInfo.scripts[hasConflicts ? `taskflow:${scriptName}` : scriptName] =
+      packageInfo.scripts[scriptName];
+  }
+
+  await promises.writeFile('package.json', JSON.stringify(packageInfo, null, 2) + '\n', 'utf-8');
 }

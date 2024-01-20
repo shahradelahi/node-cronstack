@@ -4,9 +4,13 @@ import { promises } from 'node:fs';
 import path from 'node:path';
 import { type PackageJson } from 'type-fest';
 
-export async function getPackageInfo(cwd: boolean = false) {
+export async function getPackageInfo(cwd: boolean | string = false) {
   const packageJsonPath = getPackageFilePath(
-    cwd ? path.join(process.cwd(), 'package.json') : '../package.json'
+    typeof cwd === 'string'
+      ? path.join(cwd, 'package.json')
+      : cwd
+        ? path.join(process.cwd(), 'package.json')
+        : '../package.json'
   );
 
   if (!(await fsAccess(packageJsonPath))) {
