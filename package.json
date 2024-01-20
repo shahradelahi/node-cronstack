@@ -25,9 +25,11 @@
     "dev": "tsup --watch",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint --fix src/**/*.ts",
     "format:check": "prettier --check \"**/*.{ts,md}\"",
     "format": "prettier --write .",
-    "prepublishOnly": "pnpm run format:check && pnpm run typecheck && pnpm run build"
+    "prepublishOnly": "pnpm run format:check && pnpm run lint && pnpm run build"
   },
   "packageManager": "pnpm@8.11.0",
   "type": "module",
@@ -40,7 +42,6 @@
     "execa": "^8.0.1",
     "ora": "^7.0.1",
     "tsup": "^8.0.1",
-    "typescript": "^5.3.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -48,11 +49,18 @@
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
     "chai": "^4.3.10",
+    "eslint": "^8.0.1",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+    "eslint-plugin-promise": "^6.0.0",
     "mocha": "^10.2.0",
     "prettier": "^3.1.0",
     "tsx": "^4.6.2",
-    "type-fest": "^4.8.2"
+    "type-fest": "^4.8.2",
+    "typescript": "^5.3.2"
   },
   "peerDependencies": {
     "cron": "^3.1.6"

@@ -1,16 +1,13 @@
 import { BUILD_OUTPUT_DIR } from '@/constants.ts';
-import { getHandlerPaths, getHandlers, HandlerPath } from '@/lib/handler.ts';
+import { getHandlerPaths } from '@/lib/handler.ts';
 import { transpileFile } from '@/lib/transpile.ts';
 import logger from '@/logger.ts';
-import { Service } from '@/typings.ts';
 import { fsAccess } from '@/utils/fs-access.ts';
 import { getModuleType } from '@/utils/get-package-info.ts';
-import { handleError, sendError } from '@/utils/handle-error.ts';
+import { handleError } from '@/utils/handle-error.ts';
 import { randomString } from '@/utils/random.ts';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { CronJob, CronTime } from 'cron';
-import * as fs from 'fs';
 import { promises } from 'node:fs';
 import path from 'node:path';
 import ora from 'ora';

@@ -1,6 +1,5 @@
 import { ServiceLogger } from '@/logger.ts';
 import { Service } from '@/typings.ts';
-import chalk from 'chalk';
 import { CronTime } from 'cron';
 
 export * from '@/typings.ts';

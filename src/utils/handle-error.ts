@@ -17,6 +17,7 @@ export function handleError(error: unknown) {
   process.exit(1);
 }
 
+/* eslint-disable no-console */
 export function sendError(error: any) {
   console.log();
   console.log(chalk.gray('--------------------ERROR--------------------'));

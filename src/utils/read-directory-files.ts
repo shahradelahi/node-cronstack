@@ -1,4 +1,4 @@
-import { SafeReturn } from '@/typings.ts';
+import type { SafeReturn } from '@/typings.ts';
 import { promises } from 'node:fs';
 import path from 'node:path';
 
