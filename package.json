@@ -1,7 +1,7 @@
 {
   "name": "@litehex/taskflow",
   "description": "A versatile task management and automation library with CLI tools for seamless development.",
-  "version": "0.2.0-canary.0",
+  "version": "0.2.0-canary.1",
   "main": "dist/lib.cjs",
   "module": "dist/lib.js",
   "types": "dist/lib.d.cts",
