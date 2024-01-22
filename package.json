@@ -35,9 +35,12 @@
   "type": "module",
   "dependencies": {
     "chalk": "^4.1.2",
+    "chokidar": "^3.5.3",
     "commander": "^11.1.0",
     "cron": "^3.1.6",
     "cronstrue": "^2.44.0",
+    "debounce": "^2.0.0",
+    "deepmerge": "^4.3.1",
     "dotenv": "^16.3.1",
     "execa": "^8.0.1",
     "ora": "^7.0.1",

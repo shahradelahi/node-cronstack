@@ -19,8 +19,6 @@ import path from 'node:path';
  *  └── +<service-name>.service.ts
  *  ```
  *
- * Max directory depth: 1
- *
  * @param cwd
  * @param serviceDir The directory where the services are located. Defaults to `services`.
  */

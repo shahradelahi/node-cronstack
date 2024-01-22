@@ -3,7 +3,7 @@ import { getHandlerPaths } from '@/lib/service-finder.ts';
 import { transpileFile } from '@/lib/transpile.ts';
 import logger, { ServiceLogger } from '@/logger.ts';
 import { Service } from '@/typings.ts';
-import { fsAccess } from '@/utils/fs-access.ts';
+import { fsAccess, fsAccessSync } from '@/utils/fs-access.ts';
 import { getModule } from '@/utils/get-module.ts';
 import { getModuleType } from '@/utils/get-package-info.ts';
 import { sendError } from '@/utils/handle-error.ts';
@@ -38,47 +38,22 @@ export async function getHandler({ filePath, name }: TranspiledHandler): Promise
   return handlerInstance;
 }
 
-type GetHandlerOptions = Pick<Options, 'minify' | 'sourcemap' | 'onSuccess'> & {
+type GetHandlerOptions = Omit<TranspileServicesOptions, 'outDir'> & {
   cwd: string;
-  watch?: boolean;
-  include?: string[];
 };
 
-export async function getHandlers({
-  cwd,
-  watch,
-  include,
-  ...opts
-}: GetHandlerOptions): Promise<Service[]> {
-  let rawPaths = await getHandlerPaths(cwd);
-
-  if (Array.isArray(include) && include.length > 0) {
-    rawPaths = rawPaths.filter((handler) => include.includes(handler.name));
+export async function getHandlers({ cwd, ...options }: GetHandlerOptions): Promise<Service[]> {
+  const outDir = path.join(cwd, BUILD_OUTPUT_DIR);
+  if (await fsAccess(outDir)) {
+    await promises.rm(outDir, { recursive: true });
   }
 
-  const buildDir = path.join(cwd, BUILD_OUTPUT_DIR);
-  if (await fsAccess(buildDir)) {
-    await promises.rm(buildDir, { recursive: true });
-  }
+  await transpileServices({ ...options, cwd, outDir });
 
-  const format = await getModuleType();
-  const entryPaths = rawPaths.map((handler) => handler.path);
+  const transpiledHandlers = await getHandlerPaths(outDir, '');
 
-  // transpile handlers
-  const { error } = await transpileFile({
-    entry: entryPaths,
-    outDir: buildDir,
-    format: [format],
-    watch: watch ? entryPaths : false,
-    ...opts
-  });
-
-  if (error) {
-    throw new Error('Failed to transpile handlers');
-  }
-
-  const modulePaths = rawPaths.map((handler) => ({
-    filePath: handler.path.replace(/\.(ts|js)$/, '.js').replace(`${cwd}/services`, buildDir),
+  const modulePaths = transpiledHandlers.map((handler) => ({
+    filePath: handler.path,
     name: handler.name
   }));
 
@@ -89,6 +64,38 @@ export async function getHandlers({
   }
 
   return handlers;
+}
+
+type TranspileServicesOptions = Pick<Options, 'minify' | 'sourcemap'> & {
+  cwd: string;
+  outDir: string;
+  services?: string[];
+  failOnError?: boolean;
+};
+
+export async function transpileServices(opts: TranspileServicesOptions): Promise<void> {
+  const { cwd, outDir, failOnError, services, ...options } = opts;
+
+  const format = await getModuleType();
+  let entryPaths = await getHandlerPaths(cwd);
+
+  if (Array.isArray(services) && services.length > 0) {
+    entryPaths = entryPaths.filter((handler) => services.includes(handler.name));
+  }
+
+  entryPaths = entryPaths.filter((handler) => fsAccessSync(handler.path)); // filter out non-existent files
+
+  // transpile handlers
+  const { error } = await transpileFile({
+    outDir,
+    entry: entryPaths.map((handler) => handler.path),
+    format: [format],
+    ...options
+  });
+
+  if (failOnError !== false && error) {
+    throw new Error('Failed to transpile handlers');
+  }
 }
 
 export type HandlerPath = {

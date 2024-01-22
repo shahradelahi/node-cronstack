@@ -3,12 +3,15 @@ import logger from '@/logger.ts';
 import { Service } from '@/typings.ts';
 import { handleError } from '@/utils/handle-error.ts';
 import chalk from 'chalk';
+import { watch } from 'chokidar';
 import { Command } from 'commander';
 import { CronJob } from 'cron';
+import debounce from 'debounce';
+import path from 'node:path';
 import ora from 'ora';
 import { z } from 'zod';
 
-const DevJobs = new Map<string, CronJob>();
+const LOADED_JOBS = new Map<string, CronJob>();
 
 const devOptions = z.object({
   timeZone: z.string().default('UTC'),
@@ -41,23 +44,18 @@ export const dev = new Command()
         services
       });
 
+      const { NODE_ENV } = process.env;
+      if (!NODE_ENV) {
+        process.env.NODE_ENV = 'development';
+      }
+
       const startTime = new Date().getTime();
       const isOneTime = options.runOnce || options.onceNow;
-      let compiled = false;
 
       const progress = ora('Compiling services.').start();
       const handlers: Service[] = await getHandlers({
         cwd: options.cwd,
-        include: options.services,
-        watch: !isOneTime,
-        onSuccess: async () => {
-          if (!compiled) {
-            progress.succeed('All services compiled.');
-            compiled = true;
-            return;
-          }
-          await handleReloadSignal(options);
-        }
+        services: options.services
       });
 
       if (handlers.length === 0) {
@@ -67,11 +65,6 @@ export const dev = new Command()
         );
         process.exitCode = 1;
         return;
-      }
-
-      const { NODE_ENV } = process.env;
-      if (!NODE_ENV) {
-        process.env.NODE_ENV = 'development';
       }
 
       // if options.onceNow is true, run handlers on parallel and exit
@@ -89,72 +82,85 @@ export const dev = new Command()
         once: isOneTime
       });
 
+      watch(path.resolve(options.cwd, 'services'), {
+        ignoreInitial: true
+      }).on('all', () => handleOnChange(options));
+
       const elapsed = new Date().getTime() - startTime;
-      progress.succeed(`Registered ${chalk.bold(DevJobs.size)} jobs in ${chalk.bold(elapsed)}ms.`);
+      progress.succeed(
+        `Registered ${chalk.bold(LOADED_JOBS.size)} jobs in ${chalk.bold(elapsed)}ms.`
+      );
       logger.log('');
     } catch (e) {
       handleError(e);
     }
   });
 
-async function handleReloadSignal(options: DevOptions) {
-  logger.log(logger.highlight('[notice]'), 'Detected changes in services.');
+const ON_CHANGE_PROGRESS = ora();
+
+const handleOnChange = debounce(async (options: DevOptions) => {
   logger.log('');
+  logger.log(logger.highlight('[notice]'), 'Change detected. Reloading services.');
 
-  const progress = ora('Reloading services.').start();
-
-  for (const job of DevJobs.values()) {
+  for (const job of LOADED_JOBS.values()) {
     job.stop();
   }
 
   // wait till all jobs are stopped
   await new Promise((resolve) => {
     const interval = setInterval(() => {
-      if (DevJobs.size === 0) {
+      if (LOADED_JOBS.size === 0) {
         clearInterval(interval);
         return resolve(null);
       }
 
-      for (const [name, job] of DevJobs.entries()) {
+      for (const [name, job] of LOADED_JOBS.entries()) {
         if (job.running) {
           return;
         }
-        DevJobs.delete(name);
+        LOADED_JOBS.delete(name);
       }
     }, 100);
   });
 
-  const handlers: Service[] = await getHandlers({
-    cwd: options.cwd,
-    include: options.services
-  });
+  try {
+    ON_CHANGE_PROGRESS.start('Compiling services.');
+    const handler = await getHandlers({
+      cwd: options.cwd,
+      services: options.services,
+      failOnError: false
+    });
 
-  await loadHandlers({
-    handlers,
-    timeZone: options.timeZone,
-    once: false
-  });
+    ON_CHANGE_PROGRESS.start('Reloading services.');
+    await loadHandlers({
+      handlers: handler,
+      timeZone: options.timeZone,
+      once: false
+    });
 
-  progress.succeed(`Reloaded ${chalk.bold(DevJobs.size)} jobs.`);
-  logger.log('');
-}
+    ON_CHANGE_PROGRESS.succeed(`Reloaded ${chalk.bold(LOADED_JOBS.size)} jobs.`);
+  } catch (_) {
+    logger.log('');
+    ON_CHANGE_PROGRESS.start('Waiting for changes.');
+  }
+}, 50);
 
 async function loadHandlers(options: RegisterOptions) {
   const newJobs = await registerHandlers(options);
   for (const [name, job] of newJobs.entries()) {
     job.start();
-    DevJobs.set(name, job);
+    LOADED_JOBS.set(name, job);
   }
 }
 
 process.on('SIGTERM', function () {
   logger.log('SIGTERM received. Exiting...');
 
-  for (const job of DevJobs.values()) {
+  for (const job of LOADED_JOBS.values()) {
     job.stop();
   }
 
-  DevJobs.clear();
+  LOADED_JOBS.clear();
 
   logger.log('');
   process.exit(0);
