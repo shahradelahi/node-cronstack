@@ -1,5 +1,6 @@
 import { BUILD_OUTPUT_DIR } from '@/constants.ts';
-import { getHandler, getHandlerPaths, registerHandlers } from '@/lib/handler.ts';
+import { getHandler, registerHandlers } from '@/lib/handler.ts';
+import { getHandlerPaths } from '@/lib/service-finder.ts';
 import logger from '@/logger.ts';
 import { Service } from '@/typings.ts';
 import { handleError } from '@/utils/handle-error.ts';

@@ -1,4 +1,5 @@
 import { BUILD_OUTPUT_DIR } from '@/constants.ts';
+import { getHandlerPaths } from '@/lib/service-finder.ts';
 import { transpileFile } from '@/lib/transpile.ts';
 import logger, { ServiceLogger } from '@/logger.ts';
 import { Service } from '@/typings.ts';
@@ -6,16 +7,11 @@ import { fsAccess } from '@/utils/fs-access.ts';
 import { getModule } from '@/utils/get-module.ts';
 import { getModuleType } from '@/utils/get-package-info.ts';
 import { sendError } from '@/utils/handle-error.ts';
-import {
-  readDirectory,
-  readDirectoryFiles,
-  separateFilesAndDirectories
-} from '@/utils/read-directory-files.ts';
 import chalk from 'chalk';
 import { CronJob, CronTime } from 'cron';
 import { promises } from 'node:fs';
 import path from 'node:path';
-import { Options } from 'tsup';
+import type { Options } from 'tsup';
 
 type TranspiledHandler = {
   filePath: string;
@@ -99,69 +95,6 @@ export type HandlerPath = {
   path: string;
   name: string;
 };
-
-/**
- * Get all handler file paths.
- *
- * Directory structure:
- *
- * ```text
- *  services/
- *  ├── <service-name>/
- *  │   └── +service.ts
- *  └── +<service-name>.service.ts
- *  ```
- *
- * Max directory depth: 1
- *
- * @param cwd
- * @param serviceDir The directory where the services are located. Defaults to `services`.
- */
-export async function getHandlerPaths(
-  cwd: string,
-  serviceDir = 'services'
-): Promise<HandlerPath[]> {
-  const handlerPath = path.join(cwd, serviceDir);
-
-  const { data: contents, error } = await readDirectory(handlerPath);
-  if (!contents || error) {
-    throw new Error(`Failed to read directory ${handlerPath}`);
-  }
-
-  const { files, directories } = separateFilesAndDirectories(contents || []);
-
-  const paths: HandlerPath[] = [];
-
-  for (const file of files) {
-    const regex = /^\+([a-z0-9-]+)\.service\.(ts|js)$/i;
-    if (regex.test(file.basename)) {
-      paths.push({
-        name: file.basename.match(regex)![1].toString(),
-        path: file.path
-      });
-    }
-  }
-
-  for (const directory of directories) {
-    const { data: files, error } = await readDirectoryFiles(directory.path);
-    if (!files || error) {
-      throw new Error(`Failed to read directory ${directory.path}`);
-    }
-
-    for (const file of files) {
-      const filename = path.basename(file);
-      const regex = /^\+service\.(ts|js)$/i;
-      if (regex.test(filename)) {
-        paths.push({
-          name: directory.basename,
-          path: file
-        });
-      }
-    }
-  }
-
-  return paths;
-}
 
 export type RegisterOptions = {
   handlers: Service[];

@@ -1,5 +1,5 @@
 import { BUILD_OUTPUT_DIR } from '@/constants.ts';
-import { getHandlerPaths } from '@/lib/handler.ts';
+import { getHandlerPaths } from '@/lib/service-finder.ts';
 import { transpileFile } from '@/lib/transpile.ts';
 import logger from '@/logger.ts';
 import { fsAccess } from '@/utils/fs-access.ts';
@@ -79,9 +79,10 @@ export const build = new Command()
   });
 
 function getBuildId() {
-  const id = randomString(8);
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const id = randomString(8, chars);
   if (id[0].match(/[0-9]/)) {
     return getBuildId();
   }
-  return `${id}-${randomString(4)}`;
+  return `${id}-${randomString(4, chars)}`;
 }

@@ -1,4 +1,4 @@
-import { getHandlerPaths } from '@/lib/handler.ts';
+import { getHandlerPaths } from '@/lib/service-finder.ts';
 import path from 'node:path';
 
 describe('Handlers', () => {
