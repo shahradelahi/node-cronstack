@@ -24,7 +24,7 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
-    "typecheck": "tsc --noEmit",
+    "type-check": "tsc --noEmit",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint --fix src/**/*.ts",
     "format:check": "prettier --check \"**/*.{ts,md}\"",

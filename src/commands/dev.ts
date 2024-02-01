@@ -67,6 +67,8 @@ export const dev = new Command()
         return;
       }
 
+      progress.succeed(`Compiled ${chalk.bold(handlers.length)} services.`);
+
       // if options.onceNow is true, run handlers on parallel and exit
       if (options.onceNow) {
         const promises = handlers.map((handler) => handler.handle());
@@ -84,7 +86,11 @@ export const dev = new Command()
 
       watch(path.resolve(options.cwd, 'services'), {
         ignoreInitial: true
-      }).on('all', () => handleOnChange(options));
+      }).on('all', (eventName) => {
+        if (eventName === 'add' || eventName === 'unlink') {
+          handleOnChange(options);
+        }
+      });
 
       const elapsed = new Date().getTime() - startTime;
       progress.succeed(
@@ -99,8 +105,8 @@ export const dev = new Command()
 const ON_CHANGE_PROGRESS = ora();
 
 const handleOnChange = debounce(async (options: DevOptions) => {
-  logger.log('');
   logger.log(logger.highlight('[notice]'), 'Change detected. Reloading services.');
+  logger.log('');
 
   for (const job of LOADED_JOBS.values()) {
     job.stop();
@@ -143,7 +149,7 @@ const handleOnChange = debounce(async (options: DevOptions) => {
     logger.log('');
     ON_CHANGE_PROGRESS.start('Waiting for changes.');
   }
-}, 50);
+}, 100);
 
 async function loadHandlers(options: RegisterOptions) {
   const newJobs = await registerHandlers(options);
