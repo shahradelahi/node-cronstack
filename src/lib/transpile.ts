@@ -3,7 +3,6 @@ import type { SafeReturn, TsupOptions } from '@/typings';
 import deepmerge from 'deepmerge';
 import { tsup } from '@/lib/imports';
 
-
 export async function transpileFile(options: TsupOptions): Promise<SafeReturn<boolean>> {
   try {
     const tsupPkg = await tsup();
@@ -18,8 +17,8 @@ export async function transpileFile(options: TsupOptions): Promise<SafeReturn<bo
           keepNames: true, // Keep symbol names
           config: false, // Disable config file
           silent: true, // Suppress output (default is false)
-          noExternal: [ 'node_modules' ], // Do not bundle external dependencies
-          external: [ PACKAGE_NAME, 'tslib', 'chalk' ] // Specify external dependencies
+          noExternal: ['node_modules'], // Do not bundle external dependencies
+          external: [PACKAGE_NAME, 'tslib', 'chalk'] // Specify external dependencies
         },
         options
       )
