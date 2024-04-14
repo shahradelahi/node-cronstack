@@ -11,7 +11,6 @@ export default defineConfig([
   },
   {
     entry: ['src/cli.ts'],
-    minify: true,
     format: ['esm'],
     target: 'esnext',
     outDir: 'dist'
