@@ -47,7 +47,6 @@
     "execa": "^8.0.1",
     "ora": "^8.0.1",
     "tsup": "^8.0.1",
-    "typescript": "^5.3.3",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -65,7 +64,8 @@
     "mocha": "^10.2.0",
     "prettier": "^3.2.4",
     "tsx": "^4.7.0",
-    "type-fest": "^4.10.2"
+    "type-fest": "^4.10.2",
+    "typescript": "^5.3.3"
   },
   "peerDependencies": {
     "cron": "^3"

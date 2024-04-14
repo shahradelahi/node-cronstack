@@ -2,7 +2,7 @@ import { BUILD_OUTPUT_DIR } from '@/constants';
 import { getHandlerPaths } from '@/lib/service-finder';
 import { transpileFile } from '@/lib/transpile';
 import logger, { ServiceLogger } from '@/logger';
-import { Service } from '@/typings';
+import { Service, TsupOptions } from '@/typings';
 import { fsAccess, fsAccessSync } from '@/utils/fs-access';
 import { getModule } from '@/utils/get-module';
 import { getModuleType } from '@/utils/get-package-info';
@@ -11,7 +11,6 @@ import chalk from 'chalk';
 import { CronJob, CronTime } from 'cron';
 import { promises } from 'node:fs';
 import path from 'node:path';
-import type { Options } from 'tsup';
 
 type TranspiledHandler = {
   filePath: string;
@@ -66,7 +65,7 @@ export async function getHandlers({ cwd, ...options }: GetHandlerOptions): Promi
   return handlers;
 }
 
-type TranspileServicesOptions = Pick<Options, 'minify' | 'sourcemap'> & {
+type TranspileServicesOptions = Pick<TsupOptions, 'minify' | 'sourcemap'> & {
   cwd: string;
   outDir: string;
   services?: string[];

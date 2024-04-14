@@ -65,7 +65,6 @@ export const init = new Command()
         const dependenciesSpinner = ora(`Installing dependencies...`)?.start();
 
         const packageManager = options.packageManager ?? (await getPackageManager(cwd));
-        const deps = ['cronstack'];
 
         if (!(await fsAccess(path.join(cwd, 'package.json')))) {
           await execa(packageManager, [packageManager === 'npm' ? 'init' : 'init', '-y'], {
@@ -73,9 +72,8 @@ export const init = new Command()
           });
         }
 
-        await execa(packageManager, [packageManager === 'npm' ? 'install' : 'add', ...deps], {
-          cwd: options.cwd
-        });
+        await installDeps(options.cwd, false, ['cronstack']);
+        await installDeps(options.cwd, true, ['typescript']);
 
         await addScripts(options.cwd);
 
@@ -89,6 +87,18 @@ export const init = new Command()
       handleError(e);
     }
   });
+
+async function installDeps(cwd: string, dev: boolean, packages: string[]) {
+  const packageManager = await getPackageManager(cwd);
+
+  await execa(
+    packageManager,
+    [packageManager === 'npm' ? 'install' : 'add', dev ? '-D' : '', ...packages],
+    {
+      cwd
+    }
+  );
+}
 
 async function updateGitignore() {
   if (await fsAccess('.gitignore')) {
