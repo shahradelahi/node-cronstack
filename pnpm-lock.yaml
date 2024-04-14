@@ -74,7 +74,7 @@ devDependencies:
     specifier: ^2.29.1
     version: 2.29.1(@typescript-eslint/parser@6.19.0)(eslint@8.56.0)
   eslint-plugin-n:
-    specifier: '^15.0.0 || ^16.0.0 '
+    specifier: ^15.0.0 || ^16.0.0
     version: 16.6.2(eslint@8.56.0)
   eslint-plugin-promise:
     specifier: ^6.1.1

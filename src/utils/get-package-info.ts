@@ -1,5 +1,5 @@
-import { fsAccess } from '@/utils/fs-access.ts';
-import { isJson } from '@/utils/is-json.ts';
+import { fsAccess } from '@/utils/fs-access';
+import { isJson } from '@/utils/is-json';
 import { promises } from 'node:fs';
 import path from 'node:path';
 import { type PackageJson } from 'type-fest';

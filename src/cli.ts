@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-import { fsAccess } from '@/utils/fs-access.ts';
-import { getPackageInfo } from '@/utils/get-package-info.ts';
+import { PACKAGE_NAME, PROJECT_NAME } from '@/constants';
+import { fsAccess } from '@/utils/fs-access';
+import { getPackageInfo } from '@/utils/get-package-info';
 import { Command } from 'commander';
 import dotenv from 'dotenv';
 import { add, build, dev, init, start } from './commands';
@@ -13,8 +14,8 @@ async function main() {
   const packageInfo = await getPackageInfo();
 
   const program = new Command()
-    .name('taskflow')
-    .description('Manage your services with TaskFlow.')
+    .name(PACKAGE_NAME)
+    .description(`Manage your services with ${PROJECT_NAME}.`)
     .version(packageInfo?.version || '0.0.0-dev', '-v, --version', 'display the version number');
 
   if (await fsAccess('.env')) {

@@ -1,4 +1,5 @@
-import { SafeReturn } from '@/typings.ts';
+import { PACKAGE_NAME } from '@/constants';
+import { SafeReturn } from '@/typings';
 import deepmerge from 'deepmerge';
 import { build, Options } from 'tsup';
 
@@ -16,7 +17,7 @@ export async function transpileFile(options: Options): Promise<SafeReturn<boolea
           config: false, // Disable config file
           silent: true, // Suppress output (default is false)
           noExternal: ['node_modules'], // Do not bundle external dependencies
-          external: ['@litehex/taskflow', 'tslib', 'chalk'] // Specify external dependencies
+          external: [PACKAGE_NAME, 'tslib', 'chalk'] // Specify external dependencies
         },
         options
       )

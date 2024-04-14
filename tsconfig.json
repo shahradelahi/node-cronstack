@@ -6,7 +6,6 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "allowImportingTsExtensions": true,
     "inlineSources": false,
     "isolatedModules": true,
     "moduleResolution": "node",
@@ -21,8 +20,8 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "outDir": "build"
+    "outDir": "dist"
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }

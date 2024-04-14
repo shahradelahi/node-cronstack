@@ -1,6 +1,7 @@
+import { PACKAGE_NAME } from '@/constants';
 import cronstrue from 'cronstrue';
 
-export const MICROSERVICE = `import { BaseService } from '@litehex/taskflow';
+export const MICROSERVICE = `import { BaseService } from '${PACKAGE_NAME}';
 
 export default class Handler extends BaseService {
   interval: string = "%INTERVAL%"; // %HUMAN_INTERVAL%

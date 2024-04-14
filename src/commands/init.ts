@@ -1,10 +1,10 @@
-import { BUILD_OUTPUT_DIR } from '@/constants.ts';
-import logger from '@/logger.ts';
-import { fsAccess } from '@/utils/fs-access.ts';
-import { getPackageInfo } from '@/utils/get-package-info.ts';
-import { getPackageManager } from '@/utils/get-package-manager.ts';
-import { handleError } from '@/utils/handle-error.ts';
-import { namedMicroservice } from '@/utils/templates.ts';
+import { BUILD_OUTPUT_DIR, PACKAGE_NAME } from '@/constants';
+import logger from '@/logger';
+import { fsAccess } from '@/utils/fs-access';
+import { getPackageInfo } from '@/utils/get-package-info';
+import { getPackageManager } from '@/utils/get-package-manager';
+import { handleError } from '@/utils/handle-error';
+import { namedMicroservice } from '@/utils/templates';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { execa } from 'execa';
@@ -65,7 +65,7 @@ export const init = new Command()
         const dependenciesSpinner = ora(`Installing dependencies...`)?.start();
 
         const packageManager = options.packageManager ?? (await getPackageManager(cwd));
-        const deps = ['@litehex/taskflow'];
+        const deps = ['cronstack'];
 
         if (!(await fsAccess(path.join(cwd, 'package.json')))) {
           await execa(packageManager, [packageManager === 'npm' ? 'init' : 'init', '-y'], {
@@ -98,7 +98,7 @@ async function updateGitignore() {
     if (!hasMicroservice) {
       await promises.appendFile(
         '.gitignore',
-        ['', '# TaskFlow', hasMicroservice ? false : BUILD_OUTPUT_DIR, hasEnv ? false : '.env', '']
+        ['', '# CronStack', hasMicroservice ? false : BUILD_OUTPUT_DIR, hasEnv ? false : '.env', '']
           .filter(Boolean)
           .join('\n')
       );
@@ -110,16 +110,16 @@ async function addScripts(cwd: string) {
   const packageInfo = (await getPackageInfo(cwd)) ?? {};
 
   const scripts = {
-    start: 'taskflow start',
-    build: 'taskflow build',
-    dev: 'taskflow dev'
+    start: `${PACKAGE_NAME} start`,
+    build: `${PACKAGE_NAME} build`,
+    dev: `${PACKAGE_NAME} dev`
   };
 
   if (!packageInfo?.scripts) {
     packageInfo.scripts = {};
   }
 
-  // if there are already scripts with the same name, add "taskflow" prefix
+  // if there are already scripts with the same name, add "cronstack" prefix
   let hasConflicts = false;
   for (const scriptName of Object.keys(scripts)) {
     if (packageInfo.scripts[scriptName]) {
@@ -130,7 +130,7 @@ async function addScripts(cwd: string) {
 
   // add scripts
   for (const scriptName of Object.keys(scripts)) {
-    packageInfo.scripts[hasConflicts ? `taskflow:${scriptName}` : scriptName] =
+    packageInfo.scripts[hasConflicts ? `${PACKAGE_NAME}:${scriptName}` : scriptName] =
       packageInfo.scripts[scriptName];
   }
 

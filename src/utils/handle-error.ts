@@ -1,4 +1,4 @@
-import logger from '@/logger.ts';
+import logger from '@/logger';
 import chalk from 'chalk';
 
 export function handleError(error: unknown) {

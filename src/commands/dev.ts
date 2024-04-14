@@ -1,7 +1,7 @@
-import { getHandlers, registerHandlers, RegisterOptions } from '@/lib/handler.ts';
-import logger from '@/logger.ts';
-import { Service } from '@/typings.ts';
-import { handleError } from '@/utils/handle-error.ts';
+import { getHandlers, registerHandlers, RegisterOptions } from '@/lib/handler';
+import logger from '@/logger';
+import { Service } from '@/typings';
+import { handleError } from '@/utils/handle-error';
 import chalk from 'chalk';
 import { watch } from 'chokidar';
 import { Command } from 'commander';

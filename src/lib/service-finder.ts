@@ -1,9 +1,9 @@
-import { HandlerPath } from '@/lib/handler.ts';
+import { HandlerPath } from '@/lib/handler';
 import {
   readDirectory,
   readDirectoryFiles,
   separateFilesAndDirectories
-} from '@/utils/read-directory-files.ts';
+} from '@/utils/read-directory-files';
 import path from 'node:path';
 
 /**
