@@ -1,11 +1,13 @@
 import { PACKAGE_NAME } from '@/constants';
-import { SafeReturn } from '@/typings';
+import type { SafeReturn, TsupOptions } from '@/typings';
 import deepmerge from 'deepmerge';
-import { build, Options } from 'tsup';
+import { tsup } from '@/lib/imports';
 
-export async function transpileFile(options: Options): Promise<SafeReturn<boolean>> {
+
+export async function transpileFile(options: TsupOptions): Promise<SafeReturn<boolean>> {
   try {
-    await build(
+    const tsupPkg = await tsup();
+    await tsupPkg.build(
       deepmerge(
         {
           target: 'esnext', // Specify the target environment
@@ -16,8 +18,8 @@ export async function transpileFile(options: Options): Promise<SafeReturn<boolea
           keepNames: true, // Keep symbol names
           config: false, // Disable config file
           silent: true, // Suppress output (default is false)
-          noExternal: ['node_modules'], // Do not bundle external dependencies
-          external: [PACKAGE_NAME, 'tslib', 'chalk'] // Specify external dependencies
+          noExternal: [ 'node_modules' ], // Do not bundle external dependencies
+          external: [ PACKAGE_NAME, 'tslib', 'chalk' ] // Specify external dependencies
         },
         options
       )

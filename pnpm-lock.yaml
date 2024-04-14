@@ -38,9 +38,6 @@ dependencies:
   tsup:
     specifier: ^8.0.1
     version: 8.0.1(typescript@5.3.3)
-  typescript:
-    specifier: ^5.3.3
-    version: 5.3.3
   zod:
     specifier: ^3.22.4
     version: 3.22.4
@@ -91,6 +88,9 @@ devDependencies:
   type-fest:
     specifier: ^4.10.2
     version: 4.10.2
+  typescript:
+    specifier: ^5.3.3
+    version: 5.3.3
 
 packages:
 
