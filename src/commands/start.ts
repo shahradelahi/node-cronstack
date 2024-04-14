@@ -1,9 +1,9 @@
-import { BUILD_OUTPUT_DIR } from '@/constants.ts';
-import { getHandler, registerHandlers } from '@/lib/handler.ts';
-import { getHandlerPaths } from '@/lib/service-finder.ts';
-import logger from '@/logger.ts';
-import { Service } from '@/typings.ts';
-import { handleError } from '@/utils/handle-error.ts';
+import { BUILD_OUTPUT_DIR, PACKAGE_NAME } from '@/constants';
+import { getHandler, registerHandlers } from '@/lib/handler';
+import { getHandlerPaths } from '@/lib/service-finder';
+import logger from '@/logger';
+import { Service } from '@/typings';
+import { handleError } from '@/utils/handle-error';
 import { Command } from 'commander';
 import ora from 'ora';
 import { z } from 'zod';
@@ -47,7 +47,7 @@ export const start = new Command()
       if (rawPaths.length === 0) {
         logger.log(
           logger.red('[error]'),
-          `No services found. Make sure you run ${logger.yellow('taskflow build')} first.`
+          `No services found. Make sure you run ${logger.yellow(`${PACKAGE_NAME} build`)} first.`
         );
         process.exitCode = 1;
         return;

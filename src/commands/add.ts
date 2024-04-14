@@ -1,7 +1,7 @@
-import logger from '@/logger.ts';
-import { fsAccess } from '@/utils/fs-access.ts';
-import { handleError } from '@/utils/handle-error.ts';
-import { namedMicroservice } from '@/utils/templates.ts';
+import logger from '@/logger';
+import { fsAccess } from '@/utils/fs-access';
+import { handleError } from '@/utils/handle-error';
+import { namedMicroservice } from '@/utils/templates';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import cronstrue from 'cronstrue';

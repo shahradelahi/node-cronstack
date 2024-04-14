@@ -1,9 +1,9 @@
-import { ServiceLogger } from '@/logger.ts';
-import { Service } from '@/typings.ts';
+import { ServiceLogger } from '@/logger';
+import { Service } from '@/typings';
 import { CronTime } from 'cron';
 
-export * from '@/typings.ts';
-export { default as logger } from '@/logger.ts';
+export * from '@/typings';
+export { default as logger } from '@/logger';
 
 export abstract class BaseService implements Service {
   name: string = '';

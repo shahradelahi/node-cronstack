@@ -1,12 +1,13 @@
 {
-  "name": "@litehex/taskflow",
-  "description": "A versatile task management and automation library with CLI tools for seamless development.",
-  "version": "0.2.0-canary.5",
+  "name": "cronstack",
+  "description": "Advanced cron job scheduler for Node.js",
+  "version": "0.1.0",
   "main": "dist/lib.cjs",
   "module": "dist/lib.js",
   "types": "dist/lib.d.cts",
+  "type": "module",
   "files": [
-    "dist"
+    "dist/**"
   ],
   "exports": {
     ".": {
@@ -20,7 +21,9 @@
       }
     }
   },
-  "bin": "./dist/index.js",
+  "bin": {
+    "cronstack": "dist/cli.js"
+  },
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
@@ -29,10 +32,9 @@
     "lint:fix": "eslint --fix src/**/*.ts",
     "format:check": "prettier --check \"**/*.{ts,md}\"",
     "format": "prettier --write .",
-    "prepublishOnly": "pnpm run format:check && pnpm run lint && pnpm run build"
+    "prepublishOnly": "pnpm run format:check && pnpm lint && pnpm build"
   },
   "packageManager": "pnpm@8.15.0",
-  "type": "module",
   "dependencies": {
     "chalk": "^4.1.2",
     "chokidar": "^3.5.3",
@@ -58,7 +60,7 @@
     "eslint": "^8.56.0",
     "eslint-config-standard-with-typescript": "^43.0.1",
     "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0",
     "eslint-plugin-promise": "^6.1.1",
     "mocha": "^10.2.0",
     "prettier": "^3.2.4",
@@ -66,14 +68,14 @@
     "type-fest": "^4.10.2"
   },
   "peerDependencies": {
-    "cron": "^3.1"
+    "cron": "^3"
   },
   "author": "Shahrad Elahi <shahrad@litehex.com> (https://github.com/shahradelahi)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shahradelahi/taskflow.git"
+    "url": "https://github.com/shahradelahi/node-cronstack.git"
   },
-  "license": "GPL-3.0",
+  "license": "MIT",
   "publishConfig": {
     "access": "public"
   }

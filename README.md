@@ -1,6 +1,6 @@
-# TaskFlow
+# CronStack
 
-TaskFlow is a versatile library for managing tasks, scheduling functions, and streamlining your development workflow. It allows you to automate the execution of functions through triggers or scheduled intervals. The package includes powerful CLI tools for managing your tasks, transpiling code, and bundling resources.
+CronStack is a versatile library for managing tasks, scheduling functions, and streamlining your development workflow. It allows you to automate the execution of functions through triggers or scheduled intervals. The package includes powerful CLI tools for managing your tasks, transpiling code, and bundling resources.
 
 ## Key Features
 
@@ -12,13 +12,13 @@ TaskFlow is a versatile library for managing tasks, scheduling functions, and st
 ## Installation
 
 ```bash
-npm install @litehex/taskflow
+npm install cronstack
 ```
 
 ## Initialize Project
 
 ```bash
-npx @litehex/taskflow init
+npx cronstack init
 ```
 
 ### Directory Structure
@@ -40,14 +40,14 @@ project-root
 
 ## Creating a new Service
 
-TaskFlow makes it easy to create and manage services within your project. Follow these steps to add a new service:
+CronStack makes it easy to create and manage services within your project. Follow these steps to add a new service:
 
 ### Command
 
 ```bash
-taskflow add <name> --interval <interval>
+cronstack add <name> --interval <interval>
 ```
 
 ## License
 
-This project is licensed under the GNU GPLv3 License - see the [LICENSE](LICENSE) file for details.
+[MIT](LICENSE) © [Shahrad Elahi](https://github.com/shahradelahi)

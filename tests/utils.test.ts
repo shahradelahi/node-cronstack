@@ -1,5 +1,5 @@
-import { fsAccess } from '@/utils/fs-access.ts';
-import { readDirectory } from '@/utils/read-directory-files.ts';
+import { fsAccess } from '@/utils/fs-access';
+import { readDirectory } from '@/utils/read-directory-files';
 
 describe('utils', () => {
   it('should read directory files', async () => {
