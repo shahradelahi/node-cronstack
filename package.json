@@ -5,10 +5,10 @@
   "author": "Shahrad Elahi <shahrad@litehex.com> (https://github.com/shahradelahi)",
   "private": true,
   "scripts": {
-    "dev": "pnpm run -r dev",
-    "build": "pnpm run -r build",
+    "dev": "pnpm -r dev",
+    "build": "pnpm -r build",
     "lint": "prettier --check . && eslint .",
-    "test": "pnpm run -r tests",
+    "test": "pnpm -r test",
     "format:check": "pnpm -r format:check",
     "format": "prettier --write .",
     "preinstall": "npx only-allow pnpm",
