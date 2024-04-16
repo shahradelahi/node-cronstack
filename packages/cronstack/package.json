@@ -29,7 +29,7 @@
     "build": "tsup",
     "type-check": "tsc --noEmit",
     "test": "mocha \"**/*.test.ts\" --retries 2",
-    "format:check": "prettier --check \"**/*.{ts,md}\"",
+    "format:check": "prettier --check .",
     "format": "prettier --write .",
     "release": "changeset version",
     "prepublishOnly": "pnpm run format:check && pnpm lint && pnpm build"

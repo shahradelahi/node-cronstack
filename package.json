@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "pnpm -r dev",
     "build": "pnpm -r build",
-    "lint": "prettier --check . && eslint .",
+    "lint": "pnpm format:check && eslint .",
     "test": "pnpm -r test",
     "type-check": "pnpm -r type-check",
     "format:check": "pnpm -r format:check",
