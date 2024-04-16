@@ -1,0 +1,75 @@
+{
+  "name": "cronstack",
+  "description": "Advanced cron job scheduler for Node.js",
+  "version": "0.1.0",
+  "main": "dist/lib.cjs",
+  "module": "dist/lib.js",
+  "types": "dist/lib.d.cts",
+  "type": "module",
+  "files": [
+    "dist/**"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/lib.d.ts",
+        "default": "./dist/lib.js"
+      },
+      "require": {
+        "types": "./dist/lib.d.cts",
+        "default": "./dist/lib.cjs"
+      }
+    }
+  },
+  "bin": {
+    "cronstack": "dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "type-check": "tsc --noEmit",
+    "test": "mocha \"**/*.test.ts\" --retries 2",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "release": "changeset version",
+    "prepublishOnly": "pnpm run format:check && pnpm lint && pnpm build"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "chokidar": "^3.6.0",
+    "commander": "^12.0.0",
+    "cron": "^3.1.7",
+    "cronstrue": "^2.49.0",
+    "debounce": "^2.0.0",
+    "deepmerge": "^4.3.1",
+    "dotenv": "^16.4.5",
+    "execa": "^8.0.1",
+    "ora": "^8.0.1",
+    "tsup": "^8.0.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@antfu/ni": "^0.21.12",
+    "@types/chai": "^4.3.14",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.12.7",
+    "chai": "^5.1.0",
+    "mocha": "^10.4.0",
+    "prettier": "^3.2.5",
+    "tsx": "^4.7.2",
+    "type-fest": "^4.15.0",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "cron": "^3"
+  },
+  "author": "Shahrad Elahi <shahrad@litehex.com> (https://github.com/shahradelahi)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shahradelahi/node-cronstack.git"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}
