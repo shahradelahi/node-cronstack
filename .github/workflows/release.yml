@@ -2,13 +2,12 @@ name: Release Package
 
 on:
   push:
-    branches:
-      - canary
+    branches: [ canary ]
 
 jobs:
   release:
     name: Build & Publish Release
-    if: github.repository == 'huntabyte/shadcn-svelte'
+    if: github.repository == 'shahradelahi/node-cronstack'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
