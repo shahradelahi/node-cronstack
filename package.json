@@ -5,9 +5,8 @@
   "author": "Shahrad Elahi <shahrad@litehex.com> (https://github.com/shahradelahi)",
   "private": true,
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "pnpm typecheck && eslint .",
-    "lint:fix": "eslint --fix .",
+    "lint": "eslint . && pnpm -r lint",
+    "lint:fix": "eslint . --fix && pnpm lint -r",
     "format:check": "pnpm -r format:check",
     "format": "prettier --write .",
     "preinstall": "npx only-allow pnpm"
