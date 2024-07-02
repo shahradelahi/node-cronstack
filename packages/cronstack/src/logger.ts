@@ -1,21 +1,19 @@
-/* eslint-disable no-console */
-
 import chalk from 'chalk';
 
-export function error(...args: unknown[]) {
-  console.log(chalk.red(...args));
+export function error(this: any, ...args: unknown[]) {
+  log(chalk.red(...args));
 }
 
 export function warn(...args: unknown[]) {
-  console.log(chalk.yellow(...args));
+  log(chalk.yellow(...args));
 }
 
 export function info(...args: unknown[]) {
-  console.log(chalk.cyan(...args));
+  log(chalk.cyan(...args));
 }
 
 export function success(...args: unknown[]) {
-  console.log(chalk.green(...args));
+  log(chalk.green(...args));
 }
 
 export function highlight(...args: unknown[]) {
@@ -23,18 +21,8 @@ export function highlight(...args: unknown[]) {
 }
 
 export function log(...args: unknown[]) {
-  console.log(...args);
+  console.log(...args); // eslint-disable-line no-console
 }
-
-export const ServiceLogger = (serviceName: string) =>
-  <const>{
-    log: (...args: string[]) => console.log(chalk.gray(`[${serviceName}]`), ...args),
-    error: (...args: string[]) => console.log(chalk.gray(`[${serviceName}]`), chalk.red(...args)),
-    warn: (...args: string[]) => console.log(chalk.gray(`[${serviceName}]`), chalk.yellow(...args)),
-    info: (...args: string[]) => console.log(chalk.gray(`[${serviceName}]`), chalk.cyan(...args)),
-    success: (...args: string[]) =>
-      console.log(chalk.gray(`[${serviceName}]`), chalk.green(...args))
-  };
 
 export default {
   error,

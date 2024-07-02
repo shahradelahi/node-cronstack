@@ -1,31 +1,32 @@
+import path from 'node:path';
+
 import { HandlerPath } from '@/lib/handler';
+import { fsAccess } from '@/utils/fs-extra';
 import {
   readDirectory,
   readDirectoryFiles,
   separateFilesAndDirectories
 } from '@/utils/read-directory-files';
-import path from 'node:path';
 
 /**
  * Get all handler file paths.
  *
- * Directory structure:
- *
- * ```text
- *  services/
- *  ├── <service-name>/
- *  │   ├── +<service-name>.service.ts
- *  │   └── +service.ts
- *  └── +<service-name>.service.ts
- *  ```
- *
  * @param cwd
  * @param serviceDir The directory where the services are located. Defaults to `services`.
  */
-export async function getHandlerPaths(
-  cwd: string,
-  serviceDir = 'services'
-): Promise<HandlerPath[]> {
+export async function getHandlerPaths(cwd: string, serviceDir?: string): Promise<HandlerPath[]> {
+  if (serviceDir === undefined) {
+    const isSrcDir = fsAccess(path.join(cwd, 'src', 'services'));
+    const isServicesDir = fsAccess(path.join(cwd, 'services'));
+    if (isSrcDir && isServicesDir) {
+      throw new Error(
+        'Both "src/services" and "services" directories exist. Please rename one of them to avoid conflicts.'
+      );
+    }
+
+    serviceDir = isSrcDir ? 'src/services' : 'services';
+  }
+
   const handlerPath = path.join(cwd, serviceDir);
 
   const { data: contents, error } = await readDirectory(handlerPath);
@@ -41,7 +42,7 @@ export async function getHandlerPaths(
   for (const file of files) {
     if (isFileBasedHandler(file.basename)) {
       paths.push({
-        name: readNameOfFileBasedHandler(file.basename),
+        name: readNameOfFileBasedHandler(file.basename) || file.basename,
         path: file.path
       });
     }
@@ -63,7 +64,7 @@ export async function getHandlerPaths(
         });
       } else if (isFileBasedHandler(file)) {
         paths.push({
-          name: readNameOfFileBasedHandler(file),
+          name: readNameOfFileBasedHandler(file) || filename,
           path: file
         });
       }
@@ -90,5 +91,9 @@ function isDirectoryBasedHandler(handlerPath: string) {
 }
 
 function readNameOfFileBasedHandler(handlerPath: string) {
-  return handlerPath.match(FILE_BASED_HANDLER_REGEX)![1].toString();
+  const match = handlerPath.match(FILE_BASED_HANDLER_REGEX);
+  if (!match || match[1] === undefined) {
+    return;
+  }
+  return match[1].toString();
 }

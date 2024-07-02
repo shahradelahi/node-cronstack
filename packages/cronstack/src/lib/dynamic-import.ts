@@ -1,6 +1,7 @@
 export async function tsup() {
   // Typescript is one of tsup dependencies
-  if (!(await checkoutPackage('typescript'))) {
+  const typescript = await checkoutPackage('typescript');
+  if (!typescript) {
     throw new Error(`Cannot find 'typescript' module. Did you install it?`);
   }
 

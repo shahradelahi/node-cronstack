@@ -1,19 +1,20 @@
-import { fsAccess } from '@/utils/fs-access';
-import { isJson } from '@/utils/is-json';
 import { promises } from 'node:fs';
-import path from 'node:path';
+import { join, resolve } from 'node:path';
 import { type PackageJson } from 'type-fest';
+
+import { fsAccess } from '@/utils/fs-extra';
+import { isJson } from '@/utils/is-json';
 
 export async function getPackageInfo(cwd: boolean | string = false) {
   const packageJsonPath = getPackageFilePath(
     typeof cwd === 'string'
-      ? path.join(cwd, 'package.json')
+      ? join(cwd, 'package.json')
       : cwd
-        ? path.join(process.cwd(), 'package.json')
+        ? join(process.cwd(), 'package.json')
         : '../package.json'
   );
 
-  if (!(await fsAccess(packageJsonPath))) {
+  if (!fsAccess(packageJsonPath)) {
     return;
   }
 
@@ -27,9 +28,9 @@ export async function getPackageInfo(cwd: boolean | string = false) {
 
 function getPackageFilePath(filePath: string) {
   if (typeof __dirname === 'undefined') {
-    return path.resolve(import.meta.url, filePath);
+    return resolve(import.meta.url, filePath);
   }
-  return path.resolve(__dirname, filePath);
+  return resolve(__dirname, filePath);
 }
 
 export async function getModuleType() {

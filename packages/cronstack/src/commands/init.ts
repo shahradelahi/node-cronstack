@@ -1,17 +1,18 @@
+import { promises } from 'node:fs';
+import path from 'node:path';
+import chalk from 'chalk';
+import { Command } from 'commander';
+import { execa } from 'execa';
+import ora from 'ora';
+import { z } from 'zod';
+
 import { BUILD_OUTPUT_DIR, PACKAGE_NAME } from '@/constants';
 import logger from '@/logger';
-import { fsAccess } from '@/utils/fs-access';
+import { fsAccess } from '@/utils/fs-extra';
 import { getPackageInfo } from '@/utils/get-package-info';
 import { getPackageManager } from '@/utils/get-package-manager';
 import { handleError } from '@/utils/handle-error';
 import { namedMicroservice } from '@/utils/templates';
-import chalk from 'chalk';
-import { Command } from 'commander';
-import { execa } from 'execa';
-import { promises } from 'node:fs';
-import path from 'node:path';
-import ora from 'ora';
-import { z } from 'zod';
 
 export const init = new Command()
   .command('init')
@@ -45,12 +46,12 @@ export const init = new Command()
       const cwd = path.resolve(options.cwd);
       const servicesPath = path.join(cwd, 'services');
 
-      if (!(await fsAccess(servicesPath))) {
+      if (!fsAccess(servicesPath)) {
         await promises.mkdir(servicesPath);
       }
 
       const helloPath = path.join(servicesPath, '+hello.service.ts');
-      if (!(await fsAccess(helloPath))) {
+      if (!fsAccess(helloPath)) {
         await promises.writeFile(helloPath, namedMicroservice('hello'));
       }
 
@@ -66,7 +67,7 @@ export const init = new Command()
 
         const packageManager = options.packageManager ?? (await getPackageManager(cwd));
 
-        if (!(await fsAccess(path.join(cwd, 'package.json')))) {
+        if (!fsAccess(path.join(cwd, 'package.json'))) {
           await execa(packageManager, [packageManager === 'npm' ? 'init' : 'init', '-y'], {
             cwd: options.cwd
           });
@@ -101,7 +102,7 @@ async function installDeps(cwd: string, dev: boolean, packages: string[]) {
 }
 
 async function updateGitignore() {
-  if (await fsAccess('.gitignore')) {
+  if (fsAccess('.gitignore')) {
     const gitignore = (await promises.readFile('.gitignore')).toString();
     const hasMicroservice = gitignore.includes(BUILD_OUTPUT_DIR);
     const hasEnv = gitignore.includes('.env');

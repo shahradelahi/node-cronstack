@@ -1,15 +1,16 @@
-import { getHandlers, registerHandlers, RegisterOptions } from '@/lib/handler';
-import logger from '@/logger';
-import { Service } from '@/typings';
-import { handleError } from '@/utils/handle-error';
+import path from 'node:path';
 import chalk from 'chalk';
 import { watch } from 'chokidar';
 import { Command } from 'commander';
 import { CronJob } from 'cron';
 import debounce from 'debounce';
-import path from 'node:path';
 import ora from 'ora';
 import { z } from 'zod';
+
+import { getHandlers, registerHandlers, RegisterOptions } from '@/lib/handler';
+import logger from '@/logger';
+import { Service } from '@/typings';
+import { handleError } from '@/utils/handle-error';
 
 const LOADED_JOBS = new Map<string, CronJob>();
 
@@ -46,7 +47,7 @@ export const dev = new Command()
 
       const { NODE_ENV } = process.env;
       if (!NODE_ENV) {
-        process.env.NODE_ENV = 'development';
+        process.env['NODE_ENV'] = 'development';
       }
 
       const startTime = new Date().getTime();

@@ -1,6 +1,6 @@
-import type { SafeReturn } from '@/typings';
 import { promises } from 'node:fs';
 import path from 'node:path';
+import { trySafe, type SafeReturn } from 'p-safe';
 
 export type Content = {
   type: 'file' | 'directory';
@@ -9,7 +9,7 @@ export type Content = {
 };
 
 export async function readDirectory(directoryPath: string): Promise<SafeReturn<Content[]>> {
-  try {
+  return trySafe(async (resolve) => {
     const fileNames = await promises.readdir(directoryPath); // returns a JS array of just short/local file-names, not paths.
     const filePaths = fileNames.map((fn) => path.join(directoryPath, fn));
 
@@ -23,27 +23,23 @@ export async function readDirectory(directoryPath: string): Promise<SafeReturn<C
       }
     }
 
-    return { data: contents };
-  } catch (err) {
-    return { error: err };
-  }
+    return resolve(contents);
+  });
 }
 
 export async function readDirectoryFiles(directoryPath: string): Promise<SafeReturn<string[]>> {
-  try {
+  return trySafe(async (resolve, reject) => {
     const contents = await readDirectory(directoryPath);
     if (contents.error) {
-      return { error: contents.error };
+      return reject(contents.error);
     }
 
     const files = (contents.data || [])
       .filter((content) => content.type === 'file')
       .map((content) => content.path);
 
-    return { data: files };
-  } catch (err) {
-    return { error: err };
-  }
+    return resolve(files);
+  });
 }
 
 export function separateFilesAndDirectories(contents: Content[]): {

@@ -1,12 +1,13 @@
+import { Command } from 'commander';
+import ora from 'ora';
+import { z } from 'zod';
+
 import { BUILD_OUTPUT_DIR, PACKAGE_NAME } from '@/constants';
-import { getHandler, registerHandlers } from '@/lib/handler';
+import { getHandlerInstance, registerHandlers } from '@/lib/handler';
 import { getHandlerPaths } from '@/lib/service-finder';
 import logger from '@/logger';
 import { Service } from '@/typings';
 import { handleError } from '@/utils/handle-error';
-import { Command } from 'commander';
-import ora from 'ora';
-import { z } from 'zod';
 
 export const start = new Command()
   .command('start')
@@ -33,6 +34,7 @@ export const start = new Command()
           onceNow: z.boolean().default(false)
         })
         .parse({
+          services,
           ...opts
         });
 
@@ -64,7 +66,7 @@ export const start = new Command()
 
       const handlers: Service[] = [];
       for (const modulePath of modulePaths) {
-        const handler = await getHandler(modulePath);
+        const handler = await getHandlerInstance(modulePath);
         handlers.push(handler);
       }
 
