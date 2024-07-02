@@ -8,26 +8,32 @@ import {
   separateFilesAndDirectories
 } from '@/utils/read-directory-files';
 
+export function getServicesBaseDir(cwd: string = process.cwd()): string {
+  const isSrcDir = fsAccess(path.join(cwd, 'src', 'services'));
+  const isServicesDir = fsAccess(path.join(cwd, 'services'));
+  if (isSrcDir && isServicesDir) {
+    throw new Error(
+      'Both "src/services" and "services" directories exist. Please rename one of them to avoid conflicts.'
+    );
+  }
+  if (isSrcDir) {
+    return 'src/services';
+  }
+  return 'services';
+}
+
 /**
  * Get all handler file paths.
  *
  * @param cwd
- * @param serviceDir The directory where the services are located. Defaults to `services`.
+ * @param baseDir The directory where the services are located. Defaults to `services`.
  */
-export async function getHandlerPaths(cwd: string, serviceDir?: string): Promise<HandlerPath[]> {
-  if (serviceDir === undefined) {
-    const isSrcDir = fsAccess(path.join(cwd, 'src', 'services'));
-    const isServicesDir = fsAccess(path.join(cwd, 'services'));
-    if (isSrcDir && isServicesDir) {
-      throw new Error(
-        'Both "src/services" and "services" directories exist. Please rename one of them to avoid conflicts.'
-      );
-    }
-
-    serviceDir = isSrcDir ? 'src/services' : 'services';
+export async function getHandlerPaths(cwd: string, baseDir?: string): Promise<HandlerPath[]> {
+  if (baseDir === undefined) {
+    baseDir = getServicesBaseDir();
   }
 
-  const handlerPath = path.join(cwd, serviceDir);
+  const handlerPath = path.join(cwd, baseDir);
 
   const { data: contents, error } = await readDirectory(handlerPath);
   if (!contents || error) {

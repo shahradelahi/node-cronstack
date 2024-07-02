@@ -5,6 +5,7 @@ import { Command } from 'commander';
 import cronstrue from 'cronstrue';
 import { z } from 'zod';
 
+import { getServicesBaseDir } from '@/lib/service-finder';
 import logger from '@/logger';
 import { fsAccess } from '@/utils/fs-extra';
 import { handleError } from '@/utils/handle-error';
@@ -33,7 +34,7 @@ export const add = new Command()
 
       // create "services" directory and add "services/+hello.service.ts" sample service
       const cwd = path.resolve(options.cwd);
-      const servicesPath = path.join(cwd, 'services');
+      const servicesPath = path.join(cwd, getServicesBaseDir());
 
       if (!fsAccess(servicesPath)) {
         await promises.mkdir(servicesPath);
