@@ -9,7 +9,8 @@
     "lint:fix": "eslint . --fix && pnpm lint -r",
     "format:check": "pnpm -r format:check",
     "format": "prettier --write .",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow pnpm",
+    "ci:publish": "changeset publish"
   },
   "packageManager": "pnpm@8.15.8",
   "devDependencies": {
