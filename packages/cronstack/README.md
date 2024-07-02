@@ -54,4 +54,4 @@ cronstack add <name> --interval <interval>
 
 ## License
 
-[MIT](../../LICENSE) © [Shahrad Elahi](https://github.com/shahradelahi)
+[MIT](LICENSE) © [Shahrad Elahi](https://github.com/shahradelahi)
