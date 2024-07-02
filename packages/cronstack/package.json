@@ -1,14 +1,18 @@
 {
   "name": "cronstack",
-  "description": "Advanced cron job scheduler for Node.js",
   "version": "0.1.0",
+  "description": "Advanced cron job scheduler for Node.js",
+  "author": "Shahrad Elahi <shahrad@litehex.com> (https://github.com/shahradelahi)",
+  "license": "MIT",
+  "repository": "github:shahradelahi/node-cronstack",
+  "homepage": "https://github.com/shahradelahi/node-cronstack#readme",
+  "type": "module",
   "main": "dist/lib.cjs",
   "module": "dist/lib.js",
   "types": "dist/lib.d.cts",
-  "type": "module",
-  "files": [
-    "dist/**"
-  ],
+  "bin": {
+    "cronstack": "dist/cli.js"
+  },
   "exports": {
     ".": {
       "import": {
@@ -21,55 +25,56 @@
       }
     }
   },
-  "bin": {
-    "cronstack": "dist/cli.js"
-  },
+  "files": [
+    "dist/**"
+  ],
+  "packageManager": "pnpm@8.15.8",
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
-    "type-check": "tsc --noEmit",
-    "test": "mocha \"**/*.test.ts\" --retries 2",
+    "test": "mocha \"**/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "lint": "pnpm typecheck && eslint .",
+    "lint:fix": "eslint --fix .",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "release": "changeset version",
     "prepublishOnly": "pnpm run format:check && pnpm lint && pnpm build"
   },
   "dependencies": {
     "chalk": "^4.1.2",
     "chokidar": "^3.6.0",
-    "commander": "^12.0.0",
+    "commander": "^12.1.0",
     "cron": "^3.1.7",
-    "cronstrue": "^2.49.0",
-    "debounce": "^2.0.0",
+    "cronstrue": "^2.50.0",
+    "debounce": "^2.1.0",
     "deepmerge": "^4.3.1",
     "dotenv": "^16.4.5",
-    "execa": "^8.0.1",
+    "execa": "^9.3.0",
     "ora": "^8.0.1",
-    "tsup": "^8.0.2",
-    "zod": "^3.22.4"
+    "p-safe": "^1.0.0",
+    "tsup": "^8.1.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@antfu/ni": "^0.21.12",
-    "@types/chai": "^4.3.14",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^20.12.7",
-    "chai": "^5.1.0",
-    "mocha": "^10.4.0",
-    "prettier": "^3.2.5",
-    "tsx": "^4.7.2",
-    "type-fest": "^4.15.0",
-    "typescript": "^5.4.5"
+    "@ianvs/prettier-plugin-sort-imports": "^4.3.0",
+    "@sindresorhus/tsconfig": "^6.0.0",
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.9",
+    "chai": "^5.1.1",
+    "mocha": "^10.5.2",
+    "prettier": "^3.3.2",
+    "tsx": "^4.16.0",
+    "type-fest": "^4.20.1",
+    "typescript": "^5.5.3"
   },
   "peerDependencies": {
     "cron": "^3"
   },
-  "author": "Shahrad Elahi <shahrad@litehex.com> (https://github.com/shahradelahi)",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/shahradelahi/node-cronstack.git"
-  },
-  "license": "MIT",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org",
+    "provenance": true
   }
 }

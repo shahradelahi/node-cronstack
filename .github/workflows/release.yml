@@ -2,16 +2,21 @@ name: Release Package
 
 on:
   push:
-    branches: [ canary ]
+    branches:
+      - canary
 
 jobs:
   release:
-    name: Build & Publish Release
     if: github.repository == 'shahradelahi/node-cronstack'
+    name: Build & Publish Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -21,23 +26,10 @@ jobs:
           version: 8
 
       - name: Use Node v18
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: pnpm
-
-      # PNPM Store cache setup
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: |
-          echo "pnpm_cache_dir=$(pnpm store path)" >> $GITHUB_OUTPUT
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.pnpm-cache.outputs.pnpm_cache_dir }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
         run: pnpm install
@@ -48,8 +40,7 @@ jobs:
         with:
           commit: 'chore(release): version package'
           title: 'chore(release): version package'
-          publish: pnpm ci:release
+          publish: pnpm ci:publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.PRIVATE_TOKEN }}
-          NODE_ENV: production
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

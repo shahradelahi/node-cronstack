@@ -1,6 +1,7 @@
-import { fsAccess } from '@/utils/fs-access';
-import { readDirectory } from '@/utils/read-directory-files';
 import { expect } from 'chai';
+
+import { fsAccess } from '@/utils/fs-extra';
+import { readDirectory } from '@/utils/read-directory-files';
 
 describe('utils', () => {
   it('should read directory files', async () => {
@@ -10,7 +11,7 @@ describe('utils', () => {
   });
 
   it('should check if a file exists', async () => {
-    const res = await fsAccess('.');
+    const res = fsAccess('.');
     expect(res).to.be.true;
   });
 });

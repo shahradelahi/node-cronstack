@@ -1,5 +1,6 @@
-import logger from '@/logger';
 import chalk from 'chalk';
+
+import logger from '@/logger';
 
 export function handleError(error: unknown) {
   if (typeof error === 'string') {

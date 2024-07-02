@@ -1,40 +1,54 @@
+import { promises } from 'node:fs';
+import path from 'node:path';
+import chalk from 'chalk';
+import { CronJob, CronTime } from 'cron';
+
 import { BUILD_OUTPUT_DIR } from '@/constants';
 import { getHandlerPaths } from '@/lib/service-finder';
 import { transpileFile } from '@/lib/transpile';
-import logger, { ServiceLogger } from '@/logger';
+import logger from '@/logger';
 import { Service, TsupOptions } from '@/typings';
-import { fsAccess, fsAccessSync } from '@/utils/fs-access';
+import { fsAccess } from '@/utils/fs-extra';
 import { getModule } from '@/utils/get-module';
 import { getModuleType } from '@/utils/get-package-info';
 import { sendError } from '@/utils/handle-error';
-import chalk from 'chalk';
-import { CronJob, CronTime } from 'cron';
-import { promises } from 'node:fs';
-import path from 'node:path';
 
 type TranspiledHandler = {
   filePath: string;
   name: string;
 };
 
-export async function getHandler({ filePath, name }: TranspiledHandler): Promise<Service> {
+export async function getHandlerInstance({ filePath, name }: TranspiledHandler): Promise<Service> {
   const format = await getModuleType();
 
-  const module = await getModule(filePath);
-  if (!module.default) {
-    throw new Error(`Handler ${filePath} does not have a default export`);
+  let module = await getModule(filePath);
+  let handler: ((...args: unknown[]) => any) | undefined;
+
+  if (format === 'cjs') {
+    module = module.default;
   }
 
-  const handler = format === 'cjs' ? module.default['default'] : module.default;
+  if ('default' in module) {
+    handler = module['default'];
+  } else if ('handler' in module) {
+    handler = module['handler'];
+  }
+
   if (!handler) {
-    throw new Error(`Handler not found in ${filePath}`);
+    throw new Error(
+      `Handler not found in ${filePath}. Handlers must be exported as default or "handler".`
+    );
   }
 
-  const handlerInstance = new (handler as any)() as Service;
-  handlerInstance.name = name;
-  handlerInstance.logger = ServiceLogger(name);
+  if (typeof handler !== 'function') {
+    throw new Error(`Handler ${filePath} is not a function`);
+  }
 
-  return handlerInstance;
+  return {
+    name,
+    handle: handler,
+    ...(module['config'] || {})
+  };
 }
 
 type GetHandlerOptions = Omit<TranspileServicesOptions, 'outDir'> & {
@@ -43,7 +57,7 @@ type GetHandlerOptions = Omit<TranspileServicesOptions, 'outDir'> & {
 
 export async function getHandlers({ cwd, ...options }: GetHandlerOptions): Promise<Service[]> {
   const outDir = path.join(cwd, BUILD_OUTPUT_DIR);
-  if (await fsAccess(outDir)) {
+  if (fsAccess(outDir)) {
     await promises.rm(outDir, { recursive: true });
   }
 
@@ -58,7 +72,7 @@ export async function getHandlers({ cwd, ...options }: GetHandlerOptions): Promi
 
   const handlers: Service[] = [];
   for (const modulePath of modulePaths) {
-    const handler = await getHandler(modulePath);
+    const handler = await getHandlerInstance(modulePath);
     handlers.push(handler);
   }
 
@@ -82,7 +96,7 @@ export async function transpileServices(opts: TranspileServicesOptions): Promise
     entryPaths = entryPaths.filter((handler) => services.includes(handler.name));
   }
 
-  entryPaths = entryPaths.filter((handler) => fsAccessSync(handler.path)); // filter out non-existent files
+  entryPaths = entryPaths.filter((handler) => fsAccess(handler.path)); // filter out non-existent files
 
   // transpile handlers
   const { error } = await transpileFile({
@@ -93,7 +107,7 @@ export async function transpileServices(opts: TranspileServicesOptions): Promise
   });
 
   if (failOnError !== false && error) {
-    throw new Error('Failed to transpile handlers');
+    throw error;
   }
 }
 
@@ -114,7 +128,14 @@ export async function registerHandlers(options: RegisterOptions) {
   const jobs: Map<string, CronJob> = new Map();
 
   for (const handlerKey in handlers) {
-    const handler: Service = handlers[handlerKey];
+    const handler = handlers[handlerKey];
+    if (!handler) {
+      logger.log(
+        logger.yellow('[warn]'),
+        `Job "${chalk.bold(handlerKey)}" not registered because it is not a valid handler.`
+      );
+      continue;
+    }
 
     if (jobs.has(handler.name)) {
       logger.log(

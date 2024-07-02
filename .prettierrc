@@ -3,6 +3,7 @@
   "useTabs": false,
   "singleQuote": true,
   "trailingComma": "none",
+  "endOfLine": "lf",
   "printWidth": 100,
   "overrides": [
     {
@@ -12,5 +13,7 @@
         "printWidth": 79
       }
     }
-  ]
+  ],
+  "plugins": ["@ianvs/prettier-plugin-sort-imports"],
+  "importOrder": ["<THIRD_PARTY_MODULES>", "", "^@/(.*)$", "^[./]"]
 }

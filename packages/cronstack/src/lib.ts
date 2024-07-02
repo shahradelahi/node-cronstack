@@ -1,17 +1,27 @@
-import { ServiceLogger } from '@/logger';
-import { Service } from '@/typings';
+import path from 'node:path';
 import { CronTime } from 'cron';
+import deepmerge from 'deepmerge';
 
-export * from '@/typings';
-export { default as logger } from '@/logger';
+import { Service } from '@/typings';
 
-export abstract class BaseService implements Service {
-  name: string = '';
-  abstract interval: CronTime | string;
-  preventOverlapping: boolean = true;
-  running: boolean = false;
-
-  logger = ServiceLogger('unnamed');
-
-  abstract handle(): Promise<void>;
+export interface ServiceOptions {
+  name?: string;
+  interval: CronTime | string;
+  preventOverlapping?: boolean;
+  verbose?: boolean;
 }
+
+export function createConfig(options: ServiceOptions): Service {
+  return deepmerge(
+    {
+      name: path.basename(path.dirname(process.cwd())),
+      preventOverlapping: true,
+      running: false
+    },
+    options
+  ) as Service;
+}
+
+// -- Types ---------------------------
+
+export type * from '@/typings';

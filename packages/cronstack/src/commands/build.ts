@@ -1,17 +1,18 @@
+import { promises } from 'node:fs';
+import path from 'node:path';
+import chalk from 'chalk';
+import { Command } from 'commander';
+import ora from 'ora';
+import { z } from 'zod';
+
 import { BUILD_OUTPUT_DIR } from '@/constants';
 import { getHandlerPaths } from '@/lib/service-finder';
 import { transpileFile } from '@/lib/transpile';
 import logger from '@/logger';
-import { fsAccess } from '@/utils/fs-access';
+import { fsAccess } from '@/utils/fs-extra';
 import { getModuleType } from '@/utils/get-package-info';
 import { handleError } from '@/utils/handle-error';
 import { randomString } from '@/utils/random';
-import chalk from 'chalk';
-import { Command } from 'commander';
-import { promises } from 'node:fs';
-import path from 'node:path';
-import ora from 'ora';
-import { z } from 'zod';
 
 export const build = new Command()
   .command('build')
@@ -37,7 +38,7 @@ export const build = new Command()
       const progress = ora('Compiling services.').start();
 
       const buildDir = path.join(options.cwd, BUILD_OUTPUT_DIR);
-      if (await fsAccess(buildDir)) {
+      if (fsAccess(buildDir)) {
         await promises.rm(buildDir, { recursive: true });
       }
 
@@ -81,7 +82,7 @@ export const build = new Command()
 function getBuildId() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const id = randomString(8, chars);
-  if (id[0].match(/[0-9]/)) {
+  if (id[0]!.match(/[0-9]/)) {
     return getBuildId();
   }
   return `${id}-${randomString(4, chars)}`;

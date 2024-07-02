@@ -1,13 +1,14 @@
-import logger from '@/logger';
-import { fsAccess } from '@/utils/fs-access';
-import { handleError } from '@/utils/handle-error';
-import { namedMicroservice } from '@/utils/templates';
+import { promises } from 'node:fs';
+import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import cronstrue from 'cronstrue';
-import { promises } from 'node:fs';
-import path from 'node:path';
 import { z } from 'zod';
+
+import logger from '@/logger';
+import { fsAccess } from '@/utils/fs-extra';
+import { handleError } from '@/utils/handle-error';
+import { namedMicroservice } from '@/utils/templates';
 
 export const add = new Command()
   .command('add <name>')
@@ -34,12 +35,12 @@ export const add = new Command()
       const cwd = path.resolve(options.cwd);
       const servicesPath = path.join(cwd, 'services');
 
-      if (!(await fsAccess(servicesPath))) {
+      if (!fsAccess(servicesPath)) {
         await promises.mkdir(servicesPath);
       }
 
       const servicePath = path.join(servicesPath, `+${name}.service.ts`);
-      if (!(await fsAccess(servicePath))) {
+      if (!fsAccess(servicePath)) {
         await promises.writeFile(servicePath, namedMicroservice(name, options.interval));
       }
 

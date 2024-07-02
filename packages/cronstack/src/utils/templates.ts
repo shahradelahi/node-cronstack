@@ -1,5 +1,6 @@
-import { PACKAGE_NAME } from '@/constants';
 import cronstrue from 'cronstrue';
+
+import { PACKAGE_NAME } from '@/constants';
 
 export const MICROSERVICE = `import { BaseService } from '${PACKAGE_NAME}';
 
