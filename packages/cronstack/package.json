@@ -43,7 +43,7 @@
     "deepmerge": "^4.3.1",
     "dotenv": "^16.4.5",
     "error-serializer": "^8.0.0",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.25.0",
     "execa": "^9.5.1",
     "fast-glob": "^3.3.2",
     "lodash": "^4.17.21",
