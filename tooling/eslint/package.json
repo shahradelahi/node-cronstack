@@ -15,7 +15,7 @@
   "devDependencies": {
     "@monorepo/prettier-config": "workspace:^",
     "@shahrad/eslint-config": "^1.0.0",
-    "eslint": "^9.15.0"
+    "eslint": "^10.0.0"
   },
   "prettier": "@monorepo/prettier-config"
 }
